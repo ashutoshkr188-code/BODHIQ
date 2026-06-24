@@ -1,0 +1,141 @@
+# ─── BODHIQ docker-compose.prod.yml — AWS EC2 Production ─────────────────────
+# Usage (on EC2):
+#   docker compose -f docker-compose.prod.yml up -d --build
+#   docker compose -f docker-compose.prod.yml logs -f
+#   docker compose -f docker-compose.prod.yml down
+#
+# Prerequisites:
+#   1. .env.production file exists on the EC2 server (see .env.production.example)
+#   2. PostgreSQL running on AWS RDS (set DATABASE_URL in .env.production)
+#   3. AWS ECR or Docker Hub for image registry (or build locally on EC2)
+#   4. AWS ALB handles HTTPS — Nginx only needs port 80
+
+version: "3.9"
+
+services:
+
+  # ── Nginx Reverse Proxy ────────────────────────────────────────────────────
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: bodhiq_nginx
+    image: bodhiq/nginx:latest
+    ports:
+      - "80:80"
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    restart: always
+    networks:
+      - bodhiq_net
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-group: "/ecs/bodhiq-nginx"
+        awslogs-region: "ap-south-1"
+        awslogs-stream-prefix: "nginx"
+
+  # ── FastAPI Backend ────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bodhiq_backend
+    image: bodhiq/backend:latest
+    env_file:
+      - .env.production
+    environment:
+      # Override to use PostgreSQL RDS in production
+      # DATABASE_URL is set in .env.production
+      UPLOAD_DIR: "/app/uploads"
+    volumes:
+      # Uploads: use EFS mount in production for persistence across deploys
+      # Mount an AWS EFS volume here, e.g.:
+      # /mnt/efs/bodhiq-uploads:/app/uploads
+      - uploads_data:/app/uploads
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    restart: always
+    networks:
+      - bodhiq_net
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-group: "/ecs/bodhiq-backend"
+        awslogs-region: "ap-south-1"
+        awslogs-stream-prefix: "backend"
+    # Resource limits for EC2 (adjust based on instance type)
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+  # ── Next.js Frontend ──────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # IMPORTANT: These are baked into the Next.js build — set correctly
+        NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}"
+    container_name: bodhiq_frontend
+    image: bodhiq/frontend:latest
+    env_file:
+      - .env.production
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: always
+    networks:
+      - bodhiq_net
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-group: "/ecs/bodhiq-frontend"
+        awslogs-region: "ap-south-1"
+        awslogs-stream-prefix: "frontend"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+# ── Volumes ─────────────────────────────────────────────────────────────────
+volumes:
+  uploads_data:
+    driver: local
+    # In production, mount AWS EFS here instead:
+    # driver_opts:
+    #   type: nfs
+    #   o: addr=<efs-dns-name>,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2
+    #   device: ":/"
+
+# ── Networks ─────────────────────────────────────────────────────────────────
+networks:
+  bodhiq_net:
+    driver: bridge

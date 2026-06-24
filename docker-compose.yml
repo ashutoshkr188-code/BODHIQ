@@ -1,0 +1,102 @@
+# ─── BODHIQ docker-compose.yml — Local Development ────────────────────────────
+# Usage:
+#   docker compose up --build
+#   docker compose down -v   (removes volumes too)
+#
+# Services:
+#   nginx    — port 80 (reverse proxy)
+#   frontend — Next.js on port 3000 (internal)
+#   backend  — FastAPI on port 8000 (internal)
+#
+# Database: SQLite file in a named volume
+
+version: "3.9"
+
+services:
+
+  # ── Nginx Reverse Proxy ────────────────────────────────────────────────────
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: bodhiq_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - bodhiq_net
+
+  # ── FastAPI Backend ────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bodhiq_backend
+    env_file:
+      - .env
+    environment:
+      # SQLite for local dev
+      DATABASE_URL: "sqlite:////data/bodhiq.db"
+    volumes:
+      # Persist SQLite database
+      - sqlite_data:/data
+      # Persist uploaded media files
+      - uploads_data:/app/uploads
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - bodhiq_net
+
+  # ── Next.js Frontend ──────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # These are baked into the Next.js build at build time
+        NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://localhost}"
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}"
+    container_name: bodhiq_frontend
+    env_file:
+      - .env
+    environment:
+      # Runtime environment variables for Next.js server
+      NEXTAUTH_URL: "http://localhost"
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - bodhiq_net
+
+# ── Volumes ─────────────────────────────────────────────────────────────────
+volumes:
+  sqlite_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+# ── Networks ─────────────────────────────────────────────────────────────────
+networks:
+  bodhiq_net:
+    driver: bridge
