@@ -62,6 +62,11 @@ if not debug_logger.handlers:
 
 @app.middleware("http")
 async def dbg_middleware(request: Request, call_next):
+    # Skip logging for static assets and uploads to prevent log bloat
+    path = request.url.path
+    if path.startswith("/uploads") or path == "/favicon.ico":
+        return await call_next(request)
+
     method = request.method
     url = str(request.url)
     headers = dict(request.headers)
@@ -76,9 +81,22 @@ async def dbg_middleware(request: Request, call_next):
         debug_logger.exception(f"Exception during {method} {url}: {str(e)}")
         raise e
 
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
 # Rate limiting
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+from fastapi.encoders import jsonable_encoder
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    debug_logger.error(f"Validation error for {request.method} {request.url}: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": jsonable_encoder(exc.errors())},
+    )
 
 # Proxy headers for rate limiting behind load balancers/ALB
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")

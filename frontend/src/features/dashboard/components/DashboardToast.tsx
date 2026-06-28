@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, AlertTriangle, X, Info } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -72,8 +72,6 @@ export function DashboardToast({ message, type = "success", visible, onClose, du
 }
 
 // Hook for easy toast management
-import { useState, useCallback } from "react";
-
 export function useToast() {
   const [toast, setToast] = useState<{ message: string; type: ToastType; visible: boolean }>({
     message: "",

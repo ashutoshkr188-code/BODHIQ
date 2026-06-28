@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { serverFetch } from "@/lib/apiClient";
 import type { SiteSettings, FooterSettings } from "@/types/api";
+import { cache } from "react";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -21,10 +22,14 @@ const inter = Inter({
   display: "swap",
 });
 
+const getCachedSettings = cache(async () => {
+  return serverFetch<SiteSettings>("/settings", { cache: "no-store" });
+});
+
 export async function generateMetadata(): Promise<Metadata> {
   let settings;
   try {
-    settings = await serverFetch<SiteSettings>("/settings", { cache: "no-store" });
+    settings = await getCachedSettings();
   } catch (error) {
     console.error("Failed to fetch site settings metadata", error);
   }
@@ -104,7 +109,7 @@ export default async function RootLayout({
 
   try {
     const [settingsRes, footerRes] = await Promise.all([
-      serverFetch<SiteSettings>("/settings", { cache: "no-store" }),
+      getCachedSettings(),
       serverFetch<FooterSettings>("/footer", { cache: "no-store" }),
     ]);
     settings = settingsRes;

@@ -15,18 +15,22 @@ export type FeaturedProduct = {
 };
 
 export default async function FeaturedCollection() {
-  const data = await serverFetch<ProductListItem[]>("/products/featured", { cache: "no-store" });
-  
-  const products: FeaturedProduct[] = (data || []).map((p) => ({
-    _id: p.id,
-    name: p.name,
-    price: p.price,
-    originalPrice: p.original_price ?? undefined,
-    inStock: p.in_stock,
-    allowNotify: p.allow_notify,
-    slug: p.slug,
-    mainImage: p.main_image_url || undefined,
-  }));
+  let products: FeaturedProduct[] = [];
+  try {
+    const data = await serverFetch<ProductListItem[]>("/products/featured", { cache: "no-store" });
+    products = (data || []).map((p) => ({
+      _id: p.id,
+      name: p.name,
+      price: p.price,
+      originalPrice: p.original_price ?? undefined,
+      inStock: p.in_stock,
+      allowNotify: p.allow_notify,
+      slug: p.slug,
+      mainImage: p.main_image_url || undefined,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch featured products", error);
+  }
 
   return (
     <section className="bg-black text-white px-6 py-20">

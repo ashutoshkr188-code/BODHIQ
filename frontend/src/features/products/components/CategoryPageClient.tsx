@@ -78,10 +78,10 @@ function ProductCard({
         <div className="mt-1 flex items-center gap-2 flex-wrap">
           {originalPrice ? (
             <span className="text-gray-500 text-xs line-through">
-              ${originalPrice}
+              ₹{originalPrice}
             </span>
           ) : null}
-          <span className="text-gray-300 text-xs">${price}</span>
+          <span className="text-gray-300 text-xs">₹{price}</span>
         </div>
 
         <div className="mt-2 flex items-center justify-between">

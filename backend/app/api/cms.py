@@ -59,13 +59,4 @@ def update_promo(
     db: Session = Depends(get_db),
     admin: User = Depends(get_admin_user)
 ):
-    print("--- UPDATE PROMO API CALLED ---")
-    print("Payload:", payload.model_dump())
-    # Diagnostic helper: write payload to a file
-    try:
-        with open("last_promo_payload.txt", "w", encoding="utf-8") as f:
-            import json
-            json.dump(payload.model_dump(), f, indent=2)
-    except Exception as e:
-        print("Failed to write diagnostic file:", e)
     return cms_service.update_promo(db, payload)

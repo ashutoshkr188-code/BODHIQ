@@ -18,9 +18,9 @@ interface ProductFormData {
   name: string;
   slug: string;
   description: string;
-  price: number;
-  original_price: number | null;
-  stock: number;
+  price: number | "";
+  original_price: number | null | "";
+  stock: number | "";
   allow_notify: boolean;
   category_id: string;
   main_image_url: string;
@@ -42,11 +42,11 @@ const emptyForm: ProductFormData = {
   name: "",
   slug: "",
   description: "",
-  price: 0,
+  price: "",
   original_price: null,
-  stock: 0,
+  stock: "",
   allow_notify: true,
-  category_id: "watches",
+  category_id: "",
   main_image_url: "",
   images: [],
   product_video_url: "",
@@ -211,22 +211,77 @@ export default function ProductsPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+
+    // Client-side validation
+    if (!formData.name || formData.name.trim() === "") {
+      showToast("Product name is required", "error");
+      setActiveTab("basics");
+      return;
+    }
+    if (formData.price === "" || formData.price <= 0) {
+      showToast("Product price must be greater than 0", "error");
+      setActiveTab("basics");
+      return;
+    }
+    if (formData.stock === "" || formData.stock < 0) {
+      showToast("Stock count cannot be negative", "error");
+      setActiveTab("basics");
+      return;
+    }
+    if (!formData.category_id) {
+      showToast("Product category is required", "error");
+      setActiveTab("basics");
+      return;
+    }
+    if (formData.original_price !== null && formData.original_price !== "" && formData.original_price <= 0) {
+      showToast("Original price must be greater than 0", "error");
+      setActiveTab("basics");
+      return;
+    }
+
     const token = await getToken();
     if (!token) return;
+
+    const submissionData = {
+      ...formData,
+      price: Number(formData.price),
+      stock: Number(formData.stock),
+      original_price: (formData.original_price === "" || formData.original_price === null) ? null : Number(formData.original_price),
+    };
+
     try {
       if (editingId) {
-        await adminUpdateProduct(token, editingId, formData);
+        await adminUpdateProduct(token, editingId, submissionData);
         showToast("Product updated successfully", "success");
       } else {
-        await adminCreateProduct(token, formData);
+        await adminCreateProduct(token, submissionData);
         showToast("Product created successfully", "success");
       }
       setModalOpen(false);
       setEditingId(null);
       setFormData({ ...emptyForm });
       loadProducts();
-    } catch {
-      showToast("Failed to save product", "error");
+    } catch (err: any) {
+      console.error(err);
+      let errMsg = "Failed to save product";
+      try {
+        if (err.message) {
+          const index = err.message.indexOf(" — ");
+          if (index !== -1) {
+            const bodyPart = err.message.substring(err.message.indexOf(":", index) + 1).trim();
+            const parsed = JSON.parse(bodyPart);
+            if (parsed.detail && Array.isArray(parsed.detail)) {
+              errMsg = parsed.detail.map((d: any) => {
+                const fieldName = d.loc[d.loc.length - 1];
+                return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}: ${d.msg}`;
+              }).join(", ");
+            } else if (parsed.detail) {
+              errMsg = parsed.detail;
+            }
+          }
+        }
+      } catch {}
+      showToast(errMsg, "error");
     }
   }
 
@@ -484,6 +539,7 @@ export default function ProductsPage() {
                       onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                       className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition cursor-pointer font-medium"
                     >
+                      <option value="" disabled className="bg-[#121212] text-gray-500">Select a category...</option>
                       {categories.map((cat) => (
                         <option key={cat.id} value={cat.id} className="bg-[#121212] text-white">
                           {cat.title}
@@ -496,8 +552,9 @@ export default function ProductsPage() {
                     <input
                       required
                       type="number"
+                      min="0"
                       value={formData.stock}
-                      onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                      onChange={(e) => setFormData({ ...formData, stock: e.target.value === "" ? "" : Number(e.target.value) })}
                       className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
                     />
                   </div>
@@ -510,8 +567,10 @@ export default function ProductsPage() {
                     <input
                       required
                       type="number"
+                      min="0.01"
+                      step="0.01"
                       value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value === "" ? "" : Number(e.target.value) })}
                       className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
                     />
                   </div>
@@ -519,6 +578,8 @@ export default function ProductsPage() {
                     <label className="block text-[10px] uppercase tracking-[0.15em] text-gray-500 mb-1.5">Original Price (₹ - Optional)</label>
                     <input
                       type="number"
+                      min="0.01"
+                      step="0.01"
                       value={formData.original_price === null ? "" : formData.original_price}
                       onChange={(e) => setFormData({ ...formData, original_price: e.target.value === "" ? null : Number(e.target.value) })}
                       className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
