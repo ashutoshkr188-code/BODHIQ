@@ -10,9 +10,12 @@
 
 # ── SQLite databases ─────────────────────────────────────────────────────────
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
 bodhiq.db
+
 
 # ── Uploaded media ───────────────────────────────────────────────────────────
 backend/uploads/

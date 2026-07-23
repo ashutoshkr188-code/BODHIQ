@@ -144,7 +144,7 @@ export default async function RootLayout({
                   email: settings?.contactEmail || "bodhiq.official@gmail.com",
                   contactType: "customer service",
                 },
-              }),
+              }).replace(/</g, "\\u003c"),
             }}
           />
         </head>
