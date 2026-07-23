@@ -1,5 +1,8 @@
+import hashlib
+import hmac
 import math
 import time
+import uuid
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -7,9 +10,53 @@ from app.repositories.order_repo import order_repo
 from app.models.order import Order, OrderItem
 from app.models.user import User
 from app.schemas.order import OrderCreate, OrderStatusUpdate, OrderResponse
+from app.core.config import get_settings
 from app.core.logger import get_logger
 
 logger = get_logger(__name__)
+
+# ── Valid order status transitions (AUD-08) ───────────────────────────────────
+_VALID_TRANSITIONS: dict[str, set[str]] = {
+    "pending":   {"paid", "cancelled"},
+    "paid":      {"shipped", "cancelled"},
+    "shipped":   {"delivered"},
+    "delivered": set(),
+    "cancelled": set(),
+}
+
+
+def _verify_razorpay_payment(razorpay_order_id: str, razorpay_payment_id: str, razorpay_signature: str) -> None:
+    """
+    Verify the Razorpay payment signature server-side. (AUD-07)
+
+    Dev-mode bypass: if RAZORPAY_KEY_SECRET is empty or the literal
+    'placeholder', skip verification and log a warning. Set real keys
+    in production for full enforcement.
+    """
+    settings = get_settings()
+    key_secret = settings.RAZORPAY_KEY_SECRET
+
+    if not key_secret or key_secret in ("placeholder", ""):
+        logger.warning(
+            "[DEV MODE] RAZORPAY_KEY_SECRET not configured — skipping payment "
+            "signature verification. Set a real key in production."
+        )
+        return
+
+    # HMAC-SHA256 signature: razorpay_order_id|razorpay_payment_id
+    expected = hmac.new(
+        key_secret.encode("utf-8"),
+        f"{razorpay_order_id}|{razorpay_payment_id}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, razorpay_signature):
+        logger.warning(
+            f"Invalid Razorpay signature for order {razorpay_order_id} / payment {razorpay_payment_id}"
+        )
+        raise HTTPException(status_code=400, detail="Invalid payment signature")
+
+    logger.info(f"Razorpay signature verified for payment {razorpay_payment_id}")
 
 class OrderService:
     def get_user_orders(self, db: Session, user: User):
@@ -30,8 +77,16 @@ class OrderService:
 
     def create_order(self, db: Session, payload: OrderCreate, user: User):
         from app.repositories.product_repo import product_repo
-        
-        order_number = f"ORD-{int(time.time())}"
+
+        # Verify Razorpay payment signature before creating order (AUD-07)
+        _verify_razorpay_payment(
+            payload.razorpay_order_id,
+            payload.razorpay_payment_id,
+            payload.razorpay_signature,
+        )
+
+        # Collision-safe order number: ms timestamp + random 6-char suffix (AUD-09)
+        order_number = f"ORD-{int(time.time() * 1000)}-{uuid.uuid4().hex[:6]}"
         
         # Calculate secure total from database prices
         calculated_total = 0
@@ -94,6 +149,14 @@ class OrderService:
         if not order:
             logger.warning(f"Failed to update status. Order not found: {order_id}")
             raise HTTPException(status_code=404, detail="Order not found")
+
+        # Validate state-machine transitions (AUD-08)
+        allowed = _VALID_TRANSITIONS.get(order.status, set())
+        if payload.status not in allowed:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot transition order from '{order.status}' to '{payload.status}'",
+            )
 
         order.status = payload.status
         order = order_repo.update(db, order)

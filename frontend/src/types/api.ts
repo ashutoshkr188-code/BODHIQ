@@ -247,6 +247,7 @@ export interface ApiError {
 export interface CreateOrderPayload {
   razorpay_order_id: string;
   razorpay_payment_id: string;
+  razorpay_signature: string;   // added for server-side verification (AUD-07)
   customer_name: string;
   customer_email: string;
   amount: number;
@@ -254,6 +255,7 @@ export interface CreateOrderPayload {
   cart_items: CartItem[];
   shipping_address: ShippingAddress;
 }
+
 
 export interface CreateAddressPayload {
   full_name: string;

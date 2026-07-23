@@ -91,7 +91,7 @@ export default function RazorpayButton() {
       return;
     }
 
-    const data = await createRazorpayOrder(totalAmount);
+    const data = await createRazorpayOrder(formattedCartItems);
 
     if (!data.success) {
       setError("Failed to create order. Please try again.");

@@ -1,10 +1,17 @@
-export async function createRazorpayOrder(amount: number) {
+interface CartItemForOrder {
+  product_id: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export async function createRazorpayOrder(cartItems: CartItemForOrder[]) {
   const res = await fetch("/api/razorpay/order", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ amount }),
+    body: JSON.stringify({ cartItems }),
   });
   return res.json();
 }

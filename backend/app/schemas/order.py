@@ -25,6 +25,7 @@ class ShippingAddressSchema(BaseModel):
 class OrderCreate(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
+    razorpay_signature: str  # Required for server-side verification (AUD-07)
     customer_name: str
     customer_email: str
     amount: Decimal
@@ -52,3 +53,17 @@ class OrderResponse(BaseModel):
     created_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+
+class OrderListItem(BaseModel):
+    """Lightweight order representation for lists to reduce PII payload size (AUD-24)."""
+    id: str
+    order_number: str
+    customer_name: str
+    amount: Decimal
+    currency: str
+    status: str
+    created_at: datetime | None = None
+
+    model_config = {"from_attributes": True}
+
