@@ -42,11 +42,18 @@ async def lifespan(app: FastAPI):
     yield
 
 
+_env = os.getenv("ENV", "development").lower()
+_is_production = _env == "production"
+
 app = FastAPI(
     title="BODHIQ API",
     description="Backend API for BODHIQ luxury watch e-commerce platform",
     version="1.0.0",
     lifespan=lifespan,
+    # Disable interactive docs in production (AUD-11)
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
+    openapi_url=None if _is_production else "/openapi.json",
 )
 
 # Request logging middleware for debugging API connectivity
@@ -60,6 +67,9 @@ if not debug_logger.handlers:
     file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
     debug_logger.addHandler(file_handler)
 
+# Headers safe to write to logs — never log Authorization, Cookie, or raw IPs (AUD-22)
+_LOGGABLE_HEADERS = {"content-type", "accept", "user-agent", "host", "origin", "referer"}
+
 @app.middleware("http")
 async def dbg_middleware(request: Request, call_next):
     # Skip logging for static assets and uploads to prevent log bloat
@@ -68,17 +78,18 @@ async def dbg_middleware(request: Request, call_next):
         return await call_next(request)
 
     method = request.method
-    url = str(request.url)
-    headers = dict(request.headers)
-    if "authorization" in headers:
-        headers["authorization"] = "Bearer [REDACTED]"
-    debug_logger.info(f"Incoming: {method} {url} | Headers: {headers}")
+    # Log path only, not full URL (avoids logging query-string PII)
+    safe_headers = {
+        k: v for k, v in request.headers.items()
+        if k.lower() in _LOGGABLE_HEADERS
+    }
+    debug_logger.info(f"Incoming: {method} {request.url.path} | Headers: {safe_headers}")
     try:
         response = await call_next(request)
-        debug_logger.info(f"Response: {response.status_code} for {method} {url}")
+        debug_logger.info(f"Response: {response.status_code} for {method} {request.url.path}")
         return response
     except Exception as e:
-        debug_logger.exception(f"Exception during {method} {url}: {str(e)}")
+        debug_logger.exception(f"Exception during {method} {request.url.path}: {type(e).__name__}")
         raise e
 
 from fastapi.exceptions import RequestValidationError
@@ -92,22 +103,32 @@ from fastapi.encoders import jsonable_encoder
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    debug_logger.error(f"Validation error for {request.method} {request.url}: {exc.errors()}")
+    # Log count only — never log field values which may contain PII (AUD-23)
+    debug_logger.error(
+        f"Validation error for {request.method} {request.url.path}: "
+        f"{len(exc.errors())} field(s) failed"
+    )
     return JSONResponse(
         status_code=422,
         content={"detail": jsonable_encoder(exc.errors())},
     )
 
-# Proxy headers for rate limiting behind load balancers/ALB
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+# Proxy headers — restrict to Docker internal subnets + loopback only (AUD-19)
+# Never use trusted_hosts="*" — it lets clients spoof X-Forwarded-For and bypass rate limiting.
+_TRUSTED_PROXIES = [
+    "127.0.0.1",       # loopback
+    "172.16.0.0/12",   # Docker bridge networks (172.16.x.x – 172.31.x.x)
+    "10.0.0.0/8",      # AWS VPC / ECS internal network
+]
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=_TRUSTED_PROXIES)
 
-# CORS
+# CORS — restrict to required methods and headers only (AUD-10)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 # Static files for uploads
