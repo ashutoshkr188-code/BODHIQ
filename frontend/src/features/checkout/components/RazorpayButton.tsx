@@ -47,13 +47,13 @@ export default function RazorpayButton() {
   const selectedAddressId = useAddressStore((state) => state.selectedAddressId);
 
   const selectedAddress =
-    addresses.find((address) => address._id === selectedAddressId) ||
+    addresses.find((address) => address.id === selectedAddressId) ||
     addresses.find((address) => address.isDefault) ||
     addresses[0] ||
     null;
 
   const formattedCartItems = items.map((item: CartItem) => ({
-    product_id: item._id,
+    product_id: item.id,
     name: item.name,
     quantity: item.quantity,
     price: item.price,

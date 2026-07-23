@@ -46,7 +46,7 @@ export default function AddressPageClient() {
           >
             {addresses.map((address, i) => (
               <motion.div
-                key={address._id}
+                key={address.id}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.06 }}
@@ -74,7 +74,7 @@ export default function AddressPageClient() {
                       )}
 
                       <button
-                        onClick={() => removeAddress(address._id)}
+                        onClick={() => removeAddress(address.id)}
                         className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/5 transition-colors opacity-0 group-hover:opacity-100"
                         aria-label="Remove address"
                       >

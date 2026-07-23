@@ -18,16 +18,16 @@ export default async function CategoryPage({
   }
 
   return <CategoryPageClient categoryData={{ 
-    _id: categoryData.id,
+    id: categoryData.id,
     title: categoryData.title,
     slug: categoryData.slug,
     description: categoryData.description || "",
-    featureTitle: categoryData.featureTitle || "",
+    featureTitle: categoryData.feature_title || "",
     reverse: categoryData.reverse,
-    featureImage: categoryData.featureImage || undefined,
-    featureVideo: categoryData.featureVideo || undefined,
+    featureImage: categoryData.feature_image_url || undefined,
+    featureVideo: categoryData.feature_video_url || undefined,
     products: categoryData.products?.map((p: CategoryProduct) => ({
-      _id: p.id,
+      id: p.id,
       name: p.name,
       price: p.price,
       originalPrice: p.originalPrice ?? undefined,

@@ -53,7 +53,7 @@ export default async function ProductPage({
   // Adapt FastAPI product shape → shape expected by ProductPageClient
   // FastAPI uses snake_case; map to camelCase for the client component
   const adaptedProduct = {
-    _id: product.id,
+    id: product.id,
     name: product.name,
     description: product.description || "",
     price: product.price,

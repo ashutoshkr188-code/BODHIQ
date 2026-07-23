@@ -121,7 +121,7 @@ export default function FeaturedCollectionClient({
       {/* Featured products from FastAPI */}
       {products.map((product) => (
         <ProductCard
-          key={product._id}
+          key={product.id}
           name={product.name}
           price={product.price}
           originalPrice={product.originalPrice}

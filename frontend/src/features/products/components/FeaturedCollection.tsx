@@ -4,7 +4,7 @@ import FeaturedCollectionClient from "./FeaturedCollectionClient";
 import type { ProductListItem } from "@/types/api";
 
 export type FeaturedProduct = {
-  _id: string;
+  id: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -19,7 +19,7 @@ export default async function FeaturedCollection() {
   try {
     const data = await serverFetch<ProductListItem[]>("/products/featured", { cache: "no-store" });
     products = (data || []).map((p) => ({
-      _id: p.id,
+      id: p.id,
       name: p.name,
       price: p.price,
       originalPrice: p.original_price ?? undefined,

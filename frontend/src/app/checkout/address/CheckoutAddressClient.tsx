@@ -25,12 +25,12 @@ export default function CheckoutAddressClient() {
 
   const effectiveSelectedAddressId =
     selectedAddressId ||
-    addresses.find((address) => address.isDefault)?._id ||
-    addresses[0]?._id ||
+    addresses.find((address) => address.isDefault)?.id ||
+    addresses[0]?.id ||
     null;
 
   const selectedAddress =
-    addresses.find((a) => a._id === effectiveSelectedAddressId) || null;
+    addresses.find((a) => a.id === effectiveSelectedAddressId) || null;
 
   const handleContinueToPayment = () => {
     if (!selectedAddress) {
@@ -103,16 +103,16 @@ export default function CheckoutAddressClient() {
           <>
             <div className="grid md:grid-cols-2 gap-4 mb-10">
               {addresses.map((address, i) => {
-                const isSelected = effectiveSelectedAddressId === address._id;
+                const isSelected = effectiveSelectedAddressId === address.id;
 
                 return (
                   <motion.button
-                    key={address._id}
+                    key={address.id}
                     type="button"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.15 + i * 0.06 }}
-                    onClick={() => setSelectedAddress(address._id)}
+                    onClick={() => setSelectedAddress(address.id)}
                     className={`text-left rounded-2xl border p-5 transition-all duration-300 relative overflow-hidden ${
                       isSelected
                         ? "border-[#d4a853]/40 bg-[#d4a853]/[0.03]"

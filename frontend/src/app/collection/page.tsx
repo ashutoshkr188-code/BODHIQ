@@ -7,16 +7,16 @@ export default async function CollectionPage() {
   const categories = await serverFetch<Category[]>("/categories", { cache: "no-store" });
 
   const mappedCategories = (categories ?? []).map((cat) => ({
-    _id: cat.id,
+    id: cat.id,
     title: cat.title,
     description: cat.description || "",
     slug: cat.slug,
-    featureTitle: cat.featureTitle || "",
+    featureTitle: cat.feature_title || "",
     reverse: cat.reverse,
-    featureImage: cat.featureImage || undefined,
-    featureVideo: cat.featureVideo || undefined,
+    featureImage: cat.feature_image_url || undefined,
+    featureVideo: cat.feature_video_url || undefined,
     products: cat.products?.map((p: CategoryProduct) => ({
-      _id: p.id,
+      id: p.id,
       name: p.name,
       price: p.price,
       originalPrice: p.originalPrice ?? undefined,
