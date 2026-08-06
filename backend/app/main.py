@@ -17,17 +17,17 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from app.core.config import get_settings
 from app.db.session import init_db
 
-# Import API routers
-from app.api import products, categories, orders, addresses, users, dashboard, notify, uploads, cart, cms
-from app.api import settings as settings_router
-
 settings = get_settings()
 
 # Ensure uploads directory exists before mounting
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
-# Rate limiter
+# Rate limiter (defined before router imports to prevent circular import)
 limiter = Limiter(key_func=get_remote_address)
+
+# Import API routers
+from app.api import products, categories, orders, addresses, users, dashboard, notify, uploads, cart, cms
+from app.api import settings as settings_router
 
 
 @asynccontextmanager
