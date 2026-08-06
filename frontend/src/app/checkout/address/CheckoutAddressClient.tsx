@@ -38,7 +38,7 @@ export default function CheckoutAddressClient() {
       return;
     }
 
-    console.log("Selected Address:", selectedAddress);
+
 
     // 👉 move to payment page
     router.push("/checkout/payment");

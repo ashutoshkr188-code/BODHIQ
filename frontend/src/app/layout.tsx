@@ -23,7 +23,7 @@ const inter = Inter({
 });
 
 const getCachedSettings = cache(async () => {
-  return serverFetch<SiteSettings>("/settings", { cache: "no-store" });
+  return serverFetch<SiteSettings>("/settings");
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -110,7 +110,7 @@ export default async function RootLayout({
   try {
     const [settingsRes, footerRes] = await Promise.all([
       getCachedSettings(),
-      serverFetch<FooterSettings>("/footer", { cache: "no-store" }),
+      serverFetch<FooterSettings>("/footer"),
     ]);
     settings = settingsRes;
     footerData = footerRes;
