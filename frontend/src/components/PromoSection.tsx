@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { resolveMediaUrl } from "@/lib/apiClient";
 
 export interface PromoData {
@@ -46,10 +47,11 @@ export default function PromoSection({ data }: { data?: PromoData }) {
             className="w-full h-full object-cover opacity-60 scale-105"
           />
         ) : (
-          <img
+          <Image
             src={bgUrl}
             alt={title}
-            className="w-full h-full object-cover opacity-60 scale-105 transition-all duration-1000"
+            fill
+            className="object-cover opacity-60 scale-105 transition-all duration-1000"
           />
         )}
         {/* Luxury dark gradient overlay for text legibility */}

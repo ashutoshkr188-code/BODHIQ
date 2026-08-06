@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import Image from "next/image";
 import { useAuth } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { resolveMediaUrl } from "@/lib/apiClient";
@@ -400,7 +401,7 @@ export default function ProductsPage() {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] overflow-hidden shrink-0 flex items-center justify-center">
                         {product.main_image_url ? (
-                          <img src={resolveMediaUrl(product.main_image_url)} alt="" className="w-full h-full object-cover" />
+                          <Image src={resolveMediaUrl(product.main_image_url)} alt="" fill className="object-cover" />
                         ) : (
                           <ImageIcon size={14} className="text-gray-700" />
                         )}
@@ -611,7 +612,7 @@ export default function ProductsPage() {
                   <div className="w-20 h-20 rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden flex items-center justify-center shrink-0 relative group">
                     {formData.main_image_url ? (
                       <>
-                        <img src={resolveMediaUrl(formData.main_image_url)} alt="" className="w-full h-full object-cover" />
+                        <Image src={resolveMediaUrl(formData.main_image_url)} alt="" fill className="object-cover" />
                         <button
                           type="button"
                           onClick={() => setFormData((prev) => ({ ...prev, main_image_url: "" }))}
@@ -671,7 +672,7 @@ export default function ProductsPage() {
                     <div className="grid grid-cols-4 gap-2.5 p-3 rounded-2xl bg-white/[0.01] border border-white/[0.04]">
                       {formData.images.map((url, idx) => (
                         <div key={url} className="relative aspect-square rounded-xl bg-white/[0.03] border border-white/[0.06] overflow-hidden group">
-                          <img src={resolveMediaUrl(url)} alt="" className="w-full h-full object-cover" />
+                          <Image src={resolveMediaUrl(url)} alt="" fill className="object-cover" />
                           <button
                             type="button"
                             onClick={() => setFormData((prev) => ({

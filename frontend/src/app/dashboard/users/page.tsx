@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import Image from "next/image";
 import { useAuth } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { adminGetUsers, adminUpdateUserRole } from "@/features/dashboard/api";
@@ -144,7 +145,7 @@ export default function UsersPage() {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.06] overflow-hidden shrink-0 flex items-center justify-center">
                         {user.image_url ? (
-                          <img src={user.image_url} alt="" className="w-full h-full object-cover" />
+                          <Image src={user.image_url} alt="" fill className="object-cover" />
                         ) : (
                           <UserIcon size={14} className="text-gray-600" />
                         )}

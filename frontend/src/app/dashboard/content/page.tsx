@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useAuth } from "@clerk/nextjs";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   getContentHeader,
   updateContentHeader,
@@ -374,7 +375,7 @@ export default function ContentPage() {
                     media.type === "video" ? (
                       <Play size={14} className="text-[#d4a853]" />
                     ) : (
-                      <img src={resolveMediaUrl(media.url)} alt="" className="w-full h-full object-cover" />
+                      <Image src={resolveMediaUrl(media.url)} alt="" fill className="object-cover" />
                     )
                   ) : (
                     <ImageIcon size={16} className="text-gray-700" />
@@ -487,7 +488,7 @@ export default function ContentPage() {
               <div className="w-20 h-20 rounded-2xl bg-white/[0.02] border border-white/[0.06] overflow-hidden flex items-center justify-center shrink-0 relative group">
                 {philosophyData.image_url ? (
                   <>
-                    <img src={resolveMediaUrl(philosophyData.image_url)} alt="" className="w-full h-full object-cover" />
+                    <Image src={resolveMediaUrl(philosophyData.image_url)} alt="" fill className="object-cover" />
                     <button
                       type="button"
                       onClick={() => setPhilosophyData((prev) => ({ ...prev, image_url: null }))}
@@ -621,7 +622,7 @@ export default function ContentPage() {
                         <Play size={20} className="text-[#d4a853] fill-[#d4a853]/20" />
                       </div>
                     ) : (
-                      <img src={resolveMediaUrl(promoData.bg_url)} alt="" className="w-full h-full object-cover" />
+                      <Image src={resolveMediaUrl(promoData.bg_url)} alt="" fill className="object-cover" />
                     )}
                     <button
                       type="button"

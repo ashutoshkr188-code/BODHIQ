@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import type { BackgroundMediaItem } from "@/types/api";
 import { resolveMediaUrl } from "@/lib/apiClient";
 
@@ -90,10 +91,12 @@ export default function Header({ data }: { data?: HeaderData }) {
             className="absolute inset-0"
           >
             {activeMedia.type === "image" ? (
-              <img
+              <Image
                 src={resolveMediaUrl(activeMedia.url)}
                 alt={title}
-                className="w-full h-full object-cover"
+                fill
+                priority
+                className="object-cover"
               />
             ) : (
               <video

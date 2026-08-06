@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import { useAuth } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { uploadMultipleFiles, adminGetUploadedFiles, type UploadedFile } from "@/features/dashboard/api";
@@ -150,10 +151,11 @@ export default function MediaPage() {
                         />
                       </div>
                     ) : (
-                      <img
+                      <Image
                         src={resolveMediaUrl(file.url)}
                         alt={file.filename}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        fill
+                        className="object-cover group-hover:scale-105 transition duration-500"
                       />
                     )}
                   </div>
