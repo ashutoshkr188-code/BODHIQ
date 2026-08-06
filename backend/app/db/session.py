@@ -15,11 +15,19 @@ connect_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
+engine_args = {
+    "connect_args": connect_args,
+    "echo": False,
+    "pool_pre_ping": True,
+}
+
+if not settings.DATABASE_URL.startswith("sqlite"):
+    engine_args["pool_size"] = 20
+    engine_args["max_overflow"] = 10
+
 engine = create_engine(
     settings.DATABASE_URL,
-    connect_args=connect_args,
-    echo=False,
-    pool_pre_ping=True,
+    **engine_args,
 )
 
 # Enable WAL mode and foreign keys for SQLite
