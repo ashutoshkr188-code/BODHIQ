@@ -30,14 +30,19 @@ function ProductCard({
       whileHover={{ y: -6 }}
       className="group relative rounded-2xl border border-[#d4a853]/20 overflow-hidden hover:border-[#d4a853]/50 hover:shadow-[0_20px_40px_rgba(212,168,83,0.12)] transition-all duration-500"
     >
-      {/* Launch Edition Badge */}
-      {name.toLowerCase().includes("shunya") && (
-        <div className="absolute top-4 left-4 z-20">
+      {/* Badges */}
+      <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+        {name.toLowerCase().includes("shunya") && (
           <span className="rounded-full border border-[#d4a853]/40 bg-black/80 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-[#d4a853]">
             Launch Edition
           </span>
-        </div>
-      )}
+        )}
+        {!inStock && (
+          <span className="rounded-full border border-red-500/40 bg-black/80 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-red-400">
+            Out of Stock
+          </span>
+        )}
+      </div>
 
       <div className="relative h-80 w-full">
         <Image
