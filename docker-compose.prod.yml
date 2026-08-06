@@ -6,9 +6,8 @@
 #
 # Prerequisites:
 #   1. .env.production file exists on the EC2 server (see .env.production.example)
-#   2. PostgreSQL running on AWS RDS (set DATABASE_URL in .env.production)
-#   3. AWS ECR or Docker Hub for image registry (or build locally on EC2)
-#   4. AWS ALB handles HTTPS — Nginx only needs port 80
+#   2. EC2 instance: t3.micro (1 GB RAM) — free tier eligible
+#   3. Using SQLite for database (no RDS needed)
 
 version: "3.9"
 
@@ -20,7 +19,6 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     container_name: bodhiq_nginx
-    image: bodhiq/nginx:latest
     ports:
       - "80:80"
     depends_on:
@@ -32,11 +30,14 @@ services:
     networks:
       - bodhiq_net
     logging:
-      driver: "awslogs"
+      driver: "json-file"
       options:
-        awslogs-group: "/ecs/bodhiq-nginx"
-        awslogs-region: "ap-south-1"
-        awslogs-stream-prefix: "nginx"
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 64M
 
   # ── FastAPI Backend ────────────────────────────────────────────────────────
   backend:
@@ -44,17 +45,18 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: bodhiq_backend
-    image: bodhiq/backend:latest
     env_file:
       - .env.production
     environment:
-      # Override to use PostgreSQL RDS in production
-      # DATABASE_URL is set in .env.production
+      # SQLite database (persisted via named volume)
+      DATABASE_URL: "sqlite:////data/bodhiq.db"
       UPLOAD_DIR: "/app/uploads"
+      # Enable production mode — disables /docs, /redoc, /openapi.json
+      ENV: "production"
     volumes:
-      # Uploads: use EFS mount in production for persistence across deploys
-      # Mount an AWS EFS volume here, e.g.:
-      # /mnt/efs/bodhiq-uploads:/app/uploads
+      # Persist SQLite database across container restarts
+      - sqlite_data:/data
+      # Persist uploaded media
       - uploads_data:/app/uploads
     expose:
       - "8000"
@@ -68,20 +70,14 @@ services:
     networks:
       - bodhiq_net
     logging:
-      driver: "awslogs"
+      driver: "json-file"
       options:
-        awslogs-group: "/ecs/bodhiq-backend"
-        awslogs-region: "ap-south-1"
-        awslogs-stream-prefix: "backend"
-    # Resource limits for EC2 (adjust based on instance type)
+        max-size: "10m"
+        max-file: "3"
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 256M
+          memory: 384M
 
   # ── Next.js Frontend ──────────────────────────────────────────────────────
   frontend:
@@ -93,7 +89,6 @@ services:
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}"
     container_name: bodhiq_frontend
-    image: bodhiq/frontend:latest
     env_file:
       - .env.production
     expose:
@@ -111,29 +106,21 @@ services:
     networks:
       - bodhiq_net
     logging:
-      driver: "awslogs"
+      driver: "json-file"
       options:
-        awslogs-group: "/ecs/bodhiq-frontend"
-        awslogs-region: "ap-south-1"
-        awslogs-stream-prefix: "frontend"
+        max-size: "10m"
+        max-file: "3"
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 512M
-        reservations:
-          cpus: "0.25"
-          memory: 256M
+          memory: 384M
 
 # ── Volumes ─────────────────────────────────────────────────────────────────
 volumes:
+  sqlite_data:
+    driver: local
   uploads_data:
     driver: local
-    # In production, mount AWS EFS here instead:
-    # driver_opts:
-    #   type: nfs
-    #   o: addr=<efs-dns-name>,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2
-    #   device: ":/"
 
 # ── Networks ─────────────────────────────────────────────────────────────────
 networks:
