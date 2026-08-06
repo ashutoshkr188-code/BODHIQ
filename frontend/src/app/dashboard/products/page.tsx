@@ -399,7 +399,7 @@ export default function ProductsPage() {
                   {/* Product Info */}
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] overflow-hidden shrink-0 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] overflow-hidden shrink-0 flex items-center justify-center relative">
                         {product.main_image_url ? (
                           <Image src={resolveMediaUrl(product.main_image_url)} alt="" fill className="object-cover" />
                         ) : (

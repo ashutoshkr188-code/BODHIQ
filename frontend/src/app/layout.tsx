@@ -123,6 +123,7 @@ export default async function RootLayout({
       <html
         lang="en"
         className={`${cormorant.variable} ${inter.variable} h-full antialiased`}
+        data-scroll-behavior="smooth"
       >
         <head>
           <script

@@ -143,7 +143,7 @@ export default function UsersPage() {
                   {/* User Profile Info */}
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.06] overflow-hidden shrink-0 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.06] overflow-hidden shrink-0 flex items-center justify-center relative">
                         {user.image_url ? (
                           <Image src={user.image_url} alt="" fill className="object-cover" />
                         ) : (
