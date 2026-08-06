@@ -1,62 +1,99 @@
-# BODHIQ Performance and Infrastructure Audit
+# BODHIQ Performance and Infrastructure Audit (v2)
+
+> **Last updated:** Aug 6, 2026 — Pre-launch re-audit for AWS free-tier deployment
 
 This document outlines the performance and infrastructure audit findings for the BODHIQ application, covering both the Next.js frontend and the FastAPI backend ecosystem.
 
-## Frontend (Next.js)
+---
 
-### Rendering Strategies (SSG vs SSR vs Client Components)
-> [!WARNING]
-> Almost every component and page in the `frontend` directory is explicitly marked with `"use client"`.
+## Previous Audit (Jul 24) — Fixed Items ✅
 
-- **Finding**: The application heavily relies on Client Components instead of leveraging React Server Components (RSC). Pages like Cart, Checkout, Account, Dashboard, and Product listings are all rendered client-side.
-- **Impact**: This negates the SEO benefits of SSR/SSG and shifts data-fetching and rendering overhead to the client. This results in larger JavaScript bundles, slower Time to Interactive (TTI), and poor Core Web Vitals.
-- **Proposed Fix**: Audit the component tree. Remove `"use client"` from page-level components (`page.tsx`) and layout components. Refactor data fetching to occur on the server (using Server Components) and only use Client Components for small interactive islands (e.g., buttons, forms, carousels).
-
-### Images and Videos Optimization
-> [!CAUTION]
-> The codebase extensively uses unoptimized raw HTML `<img>` tags for product images, user avatars, and promotional backgrounds instead of `next/image`.
-
-- **Finding**: Files such as `AdminSidebar.tsx`, `PromoSection.tsx`, `Header.tsx`, and various dashboard pages rely on `<img>` tags with standard `src` attributes.
-- **Impact**: Images are not automatically resized, compressed into modern formats (like WebP/AVIF), or lazy-loaded. Furthermore, the lack of explicit width/height parameters can cause severe Cumulative Layout Shifts (CLS) as images load.
-- **Proposed Fix**: Replace all raw `<img>` tags with the `next/image` (`<Image />`) component. Configure remote patterns in `next.config.js` if images are hosted externally. Ensure explicit `width` and `height` properties or `fill` with `sizes` are provided.
-
-### Client Bundles & Third-Party Scripts
-> [!NOTE]
-> Third-party scripts, such as Razorpay, are injected manually using standard DOM manipulation inside React components.
-
-- **Finding**: In `RazorpayButton.tsx`, the Razorpay checkout script is loaded by manually appending a `<script>` tag to the document body within the `handlePayment` function.
-- **Impact**: Manual script injection can delay interactive elements, block the main thread, or cause race conditions. It misses out on Next.js script optimizations.
-- **Proposed Fix**: Use the Next.js `<Script>` component (`next/script`) with an appropriate `strategy` (e.g., `lazyOnload` or `beforeInteractive`) to load Razorpay and other external scripts efficiently.
+| Issue | Fix Applied | Status |
+|-------|------------|--------|
+| Raw `<img>` tags (11 instances) | Migrated to `next/image` `<Image />` in 7 files | ✅ Done |
+| Razorpay manual script injection | Refactored to `next/script` with `lazyOnload` | ✅ Done |
+| DB connection pooling | Added `pool_size=20, max_overflow=10` for PostgreSQL | ✅ Done |
+| Nginx proxy cache missing | Added 1GB `proxy_cache_path` with 60m validity | ✅ Done |
+| Out-of-stock badge not shown | Added "Out of Stock" badge to `FeaturedCollectionClient.tsx` | ✅ Done |
 
 ---
 
-## Backend & Infrastructure (FastAPI, PostgreSQL, Nginx)
+## Re-Audit (Aug 6) — Issues Found & Fixed
 
-### Database Connection Pooling
-> [!TIP]
-> The SQLAlchemy engine configuration (`session.py`) currently relies on default pooling settings which may not be adequate for production scaling.
+### 1. `docker-compose.prod.yml` — `awslogs` driver crash (**CRITICAL**)
+> [!CAUTION]
+> The `awslogs` logging driver requires IAM role + CloudWatch agent setup. Without it, all containers fail to start on bare EC2.
 
-- **Finding**: The application uses `create_engine` with `pool_pre_ping=True`, but explicit configuration for `pool_size` and `max_overflow` is missing. (Currently using SQLite, but production relies on PostgreSQL via `.env.production`).
-- **Impact**: Under high concurrency, default connection pool limits might cause requests to queue or timeout if database connections are exhausted.
-- **Proposed Fix**: Explicitly define `pool_size` (e.g., 20) and `max_overflow` (e.g., 10) in `create_engine` based on expected traffic and database limits.
+- **Fix applied:** Switched to `json-file` logging driver with `max-size: 10m, max-file: 3` rotation.
+- **Also added:** SQLite volume (`sqlite_data:/data`), `ENV: "production"`, reduced resource limits for t3.micro.
 
-### Nginx Caching Strategies
-> [!IMPORTANT]
-> Nginx caches Next.js static assets effectively but lacks proxy caching for dynamic or API responses.
+### 2. CSP blocks Razorpay in production (**CRITICAL**)
+> [!CAUTION]
+> Content-Security-Policy in `next.config.ts` didn't explicitly whitelist Razorpay domains for `script-src` and `frame-src`.
 
-- **Finding**: The `nginx.conf` properly sets a 1-year cache and immutable headers for `/_next/static/` and a 30-day cache for static `/uploads/`. However, `proxy_cache` is not configured at all. API endpoints explicitly set `no-store, no-cache`.
-- **Impact**: While Next.js handles its own caching, an Nginx cache layer could significantly reduce load on the Next.js server for heavily trafficked public pages and assets.
-- **Proposed Fix**: Implement `proxy_cache` in Nginx for specific Next.js public routes and configure `proxy_cache_valid` for cacheable status codes.
+- **Fix applied:** Added `https://checkout.razorpay.com` and `https://api.razorpay.com` to CSP `script-src` and `frame-src`.
 
-### Rate Limits
-- **Finding**: The backend correctly implements rate limiting using `slowapi` in `main.py`. Furthermore, Nginx provides defense-in-depth rate limiting zones (`zone=api 60r/m`, `zone=notify 5r/m`, `zone=upload 10r/m`), matching backend decorators (e.g., `10/minute`, `5/minute`).
-- **Impact**: Excellent protection against brute force and abuse on non-auth and sensitive endpoints.
-- **Proposed Fix**: No immediate action required. Maintain this configuration and tune as traffic grows.
-
-### Logging and Monitoring
+### 3. `ENV=production` not set (**HIGH**)
 > [!WARNING]
-> While a local file-based `api_debug.log` is implemented, a comprehensive production-grade monitoring solution is absent.
+> FastAPI checks `os.getenv("ENV")` to disable Swagger docs. Without setting it, `/docs` is publicly exposed.
 
-- **Finding**: `main.py` configures a custom `api_debug` logger that outputs to `api_debug.log`. It explicitly filters out sensitive PII and headers (good security practice). However, there is no integration with centralized logging or application performance monitoring (APM) tools.
-- **Impact**: Relying on local `.log` files in Docker containers is brittle (ephemeral storage) and makes distributed debugging difficult in production.
-- **Proposed Fix**: Integrate a structured logging system (like Python's `structlog` or JSON logging) and an APM/Error Tracking solution (e.g., Sentry, Datadog, or Prometheus) to centralize logs and monitor application health.
+- **Fix applied:** Added `ENV: "production"` to backend service environment in `docker-compose.prod.yml`.
+
+### 4. Resource limits too high for t3.micro (**HIGH**)
+> [!WARNING]
+> Original config reserved 768M+ across 3 services — exceeds t3.micro's 1GB RAM.
+
+- **Fix applied:** Reduced to Nginx 64M + Backend 384M + Frontend 384M. Reduced uvicorn workers from 4 → 2.
+
+### 5. `console.log` leaking PII in checkout (**MEDIUM**)
+> [!NOTE]
+> `CheckoutAddressClient.tsx:41` logged full customer address (name, street, phone) to browser console.
+
+- **Fix applied:** Removed the debug `console.log` statement.
+
+### 6. Homepage `force-dynamic` + `cache: "no-store"` (**HIGH**)
+> [!WARNING]
+> Every homepage load hit the backend 4 times (header, homepage, philosophy, promo) with zero caching.
+
+- **Fix applied:** Removed `export const dynamic = "force-dynamic"` and all `cache: "no-store"` overrides. Pages now use ISR with 60-second revalidation by default.
+
+### 7. Layout fetches using `cache: "no-store"` (**MEDIUM**)
+- **Fix applied:** Removed `cache: "no-store"` from settings and footer fetches in `layout.tsx`. Now uses default 60s ISR.
+
+---
+
+## Current Status — What's Good ✅
+
+| Area | Status |
+|------|--------|
+| Image optimization (`next/image`) | ✅ All public pages converted |
+| Razorpay via `next/script` | ✅ `lazyOnload` strategy |
+| DB pooling (PostgreSQL-ready) | ✅ `pool_size=20, max_overflow=10` |
+| Nginx proxy cache | ✅ 1GB cache, 60m validity |
+| Rate limiting (Nginx + slowapi) | ✅ Dual-layer: 60r/m API, 5r/m notify, 10r/m upload |
+| Security headers | ✅ HSTS, X-Frame-Options, CSP, X-Content-Type-Options |
+| Non-root Docker users | ✅ `bodhiq` (backend) / `nextjs` (frontend) |
+| Standalone Next.js build | ✅ Multi-stage Dockerfile |
+| SEO (sitemap, robots, JSON-LD, OG) | ✅ Comprehensive |
+| Error boundaries + 404 page | ✅ Custom styled |
+| `.gitignore` covers secrets + DB files | ✅ Thorough |
+| Production mode disables Swagger docs | ✅ `ENV=production` set |
+| ISR caching for public pages | ✅ 60s revalidation |
+| Logging rotation | ✅ `json-file` with 10m/3 file limit |
+
+---
+
+## Remaining — Post-Launch Optimization (Not Blocking)
+
+These items do NOT block the presentation and should be addressed after launch. See `POST_LAUNCH_ROADMAP.md` for details.
+
+| Item | Priority | Effort |
+|------|----------|--------|
+| RSC migration (`"use client"` → Server Components) | Medium | 2-3 weeks |
+| Centralized logging (CloudWatch/Sentry) | Medium | 1 day |
+| CDN (CloudFront) | Medium | 2 hours |
+| Load testing (k6) | Medium | 1 day |
+| ECS Fargate auto-scaling | Low | 1 week |
+| Redis cache layer | Low | 2 days |
+| CI/CD pipeline (GitHub Actions) | Medium | 2 hours |
+| Database migration SQLite → PostgreSQL (RDS) | Low | 1 day |
