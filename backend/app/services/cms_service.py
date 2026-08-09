@@ -110,8 +110,6 @@ class CMSService:
             homepage.hero_cta = payload.hero_cta or None
         if payload.hero_cta_link is not None:
             homepage.hero_cta_link = payload.hero_cta_link or None
-        if payload.section_enabled is not None:
-            homepage.section_enabled = payload.section_enabled
         if payload.background_media is not None:
             homepage.background_media = sorted(
                 [item.model_dump() for item in payload.background_media],
