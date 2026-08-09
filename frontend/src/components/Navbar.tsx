@@ -10,12 +10,14 @@ import { useEffect, useState } from "react";
 import { useCartStore } from "@/hooks/cartStore";
 
 interface DropdownItem {
-  label: string;
+  label?: string;
+  title?: string;
   href: string;
 }
 
 interface NavLink {
-  label: string;
+  label?: string;
+  title?: string;
   href: string;
   dropdown?: DropdownItem[];
 }
@@ -123,7 +125,7 @@ export default function Navbar({ settings }: { settings?: NavSettings }) {
           <div className="hidden md:flex items-center space-x-8 text-xs tracking-widest uppercase">
             {finalNavLinks.map((link: NavLink, idx: number) =>
               link.dropdown && link.dropdown.length > 0 ? (
-                <div key={link.label} className="relative group">
+                <div key={link.label || link.title} className="relative group">
                   <motion.p
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -131,7 +133,7 @@ export default function Navbar({ settings }: { settings?: NavSettings }) {
                     whileHover={{ y: -1.5 }}
                     className="relative cursor-pointer"
                   >
-                    {link.label}
+                    {link.label || link.title}
                     <span className="absolute left-0 -bottom-1 w-0 h-px bg-[#d4a853] transition-all duration-300 group-hover:w-full" />
                   </motion.p>
 
@@ -144,14 +146,14 @@ export default function Navbar({ settings }: { settings?: NavSettings }) {
                           href={item.href}
                           className="block px-5 py-3 text-white/90 hover:bg-white/4 hover:text-[#d4a853] transition duration-300"
                         >
-                          {item.label}
+                          {item.label || item.title}
                         </Link>
                       ))}
                     </div>
                   </div>
                 </div>
               ) : (
-                <Link key={link.label} href={link.href} className="block">
+                <Link key={link.label || link.title} href={link.href} className="block">
                   <motion.p
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -159,7 +161,7 @@ export default function Navbar({ settings }: { settings?: NavSettings }) {
                     whileHover={{ y: -1.5 }}
                     className="relative cursor-pointer group"
                   >
-                    {link.label}
+                    {link.label || link.title}
                     <span className="absolute left-0 -bottom-1 w-0 h-px bg-[#d4a853] transition-all duration-300 group-hover:w-full" />
                   </motion.p>
                 </Link>
@@ -306,25 +308,25 @@ export default function Navbar({ settings }: { settings?: NavSettings }) {
                 <nav className="space-y-1">
                   {finalNavLinks.map((link: NavLink) =>
                     link.dropdown && link.dropdown.length > 0 ? (
-                      <div key={link.label}>
+                      <div key={link.label || link.title}>
                         <button
                           onClick={() =>
                             setMobileDropdown(
-                              mobileDropdown === link.label
+                              mobileDropdown === (link.label || link.title)
                                 ? null
-                                : link.label
+                                : (link.label || link.title) || null
                             )
                           }
                           className="w-full flex items-center justify-between py-3 text-lg font-serif text-white hover:text-[#d4a853] transition-colors"
                         >
-                          {link.label}
+                          {link.label || link.title}
                           <span className="text-[#d4a853] text-sm">
-                            {mobileDropdown === link.label ? "−" : "+"}
+                            {mobileDropdown === (link.label || link.title) ? "−" : "+"}
                           </span>
                         </button>
 
                         <AnimatePresence>
-                          {mobileDropdown === link.label && (
+                          {mobileDropdown === (link.label || link.title) && (
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: "auto", opacity: 1 }}
@@ -339,7 +341,7 @@ export default function Navbar({ settings }: { settings?: NavSettings }) {
                                     href={item.href}
                                     className="block py-2 text-sm text-gray-400 hover:text-[#d4a853] transition-colors"
                                   >
-                                    {item.label}
+                                    {item.label || item.title}
                                   </Link>
                                 ))}
                               </div>
@@ -349,11 +351,11 @@ export default function Navbar({ settings }: { settings?: NavSettings }) {
                       </div>
                     ) : (
                       <Link
-                        key={link.label}
+                        key={link.label || link.title}
                         href={link.href}
                         className="block py-3 text-lg font-serif text-white hover:text-[#d4a853] transition-colors"
                       >
-                        {link.label}
+                        {link.label || link.title}
                       </Link>
                     )
                   )}
