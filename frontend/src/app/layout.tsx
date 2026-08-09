@@ -34,26 +34,13 @@ export async function generateMetadata(): Promise<Metadata> {
     console.error("Failed to fetch site settings metadata", error);
   }
 
-  const baseTitle = settings?.seoTitle || "BODHIQ SHUNYA I — Imperfect. Almost. | Luxury Timepiece";
-  const baseDescription = settings?.seoDescription || "Discover BODHIQ SHUNYA I — a minimalist luxury watch inspired by imperfection. Hand-finished dial, Kintsugi detailing, and Japanese movement. Limited first drop.";
-  const baseKeywords = settings?.seoKeywords || [
-    "BODHIQ",
-    "SHUNYA I",
-    "Imperfect Almost",
-    "luxury watch",
-    "minimalist watch",
-    "Indian luxury brand",
-    "Kintsugi watch",
-    "premium timepiece",
-    "limited edition watch",
-    "handcrafted watch",
-  ];
+  const baseTitle = settings?.seoTitle || "BODHIQ — Luxury Timepieces";
+  const baseDescription = settings?.seoDescription || "Discover BODHIQ luxury timepieces.";
+  const baseKeywords = settings?.seoKeywords || ["BODHIQ", "luxury watch"];
 
   return {
-    metadataBase: new URL("https://bodhiq.in"),
-    alternates: {
-      canonical: "/",
-    },
+    metadataBase: new URL("https://www.bodhiqwatch.com"),
+    alternates: { canonical: "/" },
     title: {
       default: baseTitle,
       template: "%s | BODHIQ",
@@ -66,18 +53,11 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: "en_IN",
-      url: "https://bodhiq.in",
+      url: "https://www.bodhiqwatch.com",
       siteName: "BODHIQ",
       title: baseTitle,
       description: baseDescription,
-      images: [
-        {
-          url: "/watches/shunya-1/hero.jpg",
-          width: 1200,
-          height: 630,
-          alt: baseTitle,
-        },
-      ],
+      images: [{ url: "/watches/shunya-1/hero.jpg", width: 1200, height: 630, alt: baseTitle }],
     },
     twitter: {
       card: "summary_large_image",
@@ -106,17 +86,27 @@ export default async function RootLayout({
 }) {
   let settings = null;
   let footerData = null;
+  let headerData = null;
 
   try {
-    const [settingsRes, footerRes] = await Promise.all([
+    const [settingsRes, footerRes, headerRes] = await Promise.allSettled([
       getCachedSettings(),
       serverFetch<FooterSettings>("/footer", { cache: "no-store" }),
+      serverFetch<any>("/content/header", { cache: "no-store" }),
     ]);
-    settings = settingsRes;
-    footerData = footerRes;
+    if (settingsRes.status === "fulfilled") settings = settingsRes.value;
+    if (footerRes.status === "fulfilled") footerData = footerRes.value;
+    if (headerRes.status === "fulfilled") headerData = headerRes.value;
   } catch (error) {
     console.error("Failed to fetch layout data", error);
   }
+
+  // Build nav settings from header CMS data
+  const navSettings = {
+    logoText: headerData?.logo_text || (settings as any)?.logoText || "BODHIQ",
+    navLinks: headerData?.nav_links || null,
+    mobileTagline: headerData?.mobile_tagline || null,
+  };
 
   return (
     <ClerkProvider>
@@ -132,16 +122,12 @@ export default async function RootLayout({
                 "@context": "https://schema.org",
                 "@type": "Organization",
                 name: "BODHIQ",
-                url: "https://bodhiq.in",
-                logo: "https://bodhiq.in/favicon.ico",
-                description:
-                  "Luxury handcrafted timepieces that blend ancient wisdom with modern engineering.",
-                sameAs: [
-                  "https://instagram.com/bodhiq.in",
-                ],
+                url: "https://www.bodhiqwatch.com",
+                logo: "https://www.bodhiqwatch.com/favicon.ico",
+                description: "Luxury handcrafted timepieces.",
                 contactPoint: {
                   "@type": "ContactPoint",
-                  email: settings?.contactEmail || "bodhiq.official@gmail.com",
+                  email: (settings as any)?.contactEmail || "hello@bodhiq.in",
                   contactType: "customer service",
                 },
               }),
@@ -150,7 +136,7 @@ export default async function RootLayout({
         </head>
         <body className="min-h-full bg-black text-white font-sans">
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <Navbar settings={settings as any} />
+          <Navbar settings={navSettings as any} />
           {children}
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <Footer data={footerData as any} settings={settings as any} />

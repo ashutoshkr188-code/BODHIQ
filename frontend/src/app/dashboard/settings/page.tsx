@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { getSettings, updateSettings } from "@/features/dashboard/api";
-import { DashboardToast, useToast } from "@/features/dashboard/components/DashboardToast";
+import { DashboardToast, ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { Save, RefreshCw, Sliders, Globe, Tag, X } from "lucide-react";
 
 interface SettingsFormData {
@@ -265,3 +265,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+

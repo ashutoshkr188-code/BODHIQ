@@ -10,4 +10,6 @@ python-multipart==0.0.20
 aiofiles==24.1.0
 slowapi==0.1.9
 psycopg2-binary==2.9.9
+markdown==3.7
+bleach==6.2.0
 

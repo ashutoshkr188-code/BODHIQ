@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { getFooterSettings, updateFooterSettings } from "@/features/dashboard/api";
-import { DashboardToast, useToast } from "@/features/dashboard/components/DashboardToast";
+import { DashboardToast, ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { Save, Plus, Trash, Globe, Shield, RefreshCw } from "lucide-react";
 
 interface LinkItem {
@@ -426,3 +426,5 @@ export default function FooterPage() {
     </div>
   );
 }
+
+

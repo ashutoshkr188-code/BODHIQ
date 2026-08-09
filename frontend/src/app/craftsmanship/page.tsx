@@ -1,262 +1,177 @@
 import { Metadata } from "next";
-import PageHeader from "@/components/ui/PageHeader";
-import AnimatedSection from "@/components/ui/AnimatedSection";
-import SectionDivider from "@/components/ui/SectionDivider";
+import { serverFetch } from "@/lib/apiClient";
 import Image from "next/image";
-import Link from "next/link";
+import AnimatedSection from "@/components/ui/AnimatedSection";
+import PageHeader from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = {
-  title: "Craftsmanship — The Art Behind Every Timepiece",
-  description:
-    "Discover the meticulous craft behind every BODHIQ timepiece. From design philosophy to final assembly — a journey of precision, patience, and purpose.",
-  keywords: [
-    "BODHIQ craftsmanship",
-    "watchmaking",
-    "luxury watch craft",
-    "handmade watches",
-    "horology",
-  ],
-  openGraph: {
-    title: "Craftsmanship — BODHIQ",
-    description:
-      "Discover the meticulous craft behind every BODHIQ timepiece.",
-    images: ["/watches/watch-detail.jpg"],
-  },
-};
+interface CraftStep {
+  number?: string | null;
+  title: string;
+  subtitle?: string | null;
+  description?: string | null;
+  image?: string | null;
+  enabled: boolean;
+  order: number;
+}
 
-const craftSteps = [
-  {
-    number: "01",
-    title: "Design",
-    subtitle: "Where Vision Takes Shape",
-    description:
-      "Every timepiece begins as a thought — a meditation on form, function, and philosophy. Our designers spend months perfecting each detail, ensuring every line, curve, and proportion serves both beauty and purpose.",
-  },
-  {
-    number: "02",
-    title: "Material",
-    subtitle: "Chosen With Intention",
-    description:
-      "We source only the finest materials: 316L surgical-grade stainless steel, sapphire crystal glass, and genuine leather from responsible artisans. Each material is selected not just for durability, but for the story it tells.",
-  },
-  {
-    number: "03",
-    title: "Assembly",
-    subtitle: "Precision Beyond Measure",
-    description:
-      "Each component is assembled with tolerances measured in hundredths of a millimeter. Our master craftsmen bring together over 100 individual parts, ensuring every gear meshes, every hand aligns, every beat is true.",
-  },
-  {
-    number: "04",
-    title: "Finishing",
-    subtitle: "The Final Meditation",
-    description:
-      "The final stage is a ritual of patience. Each surface is polished, inspected, and refined. The dial is set. The hands find their home. What emerges is not merely a watch — it is an instrument of presence.",
-  },
-];
+interface CraftsmanshipCMS {
+  section_enabled: boolean;
+  page_eyebrow: string | null;
+  page_title: string | null;
+  page_subtitle: string | null;
+  intro_eyebrow: string | null;
+  intro_title: string | null;
+  intro_body: string | null;
+  intro_image: string | null;
+  steps: CraftStep[];
+  closing_quote: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+}
 
-export default function CraftsmanshipPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const cms = await serverFetch<CraftsmanshipCMS>("/content/craftsmanship", { cache: "no-store" }).catch(() => null);
+  return {
+    title: cms?.meta_title || "Craftsmanship",
+    description: cms?.meta_description || "The meticulous craft behind every BODHIQ timepiece.",
+    openGraph: {
+      title: cms?.meta_title || "BODHIQ Craftsmanship",
+      description: cms?.meta_description || "The meticulous craft behind every BODHIQ timepiece.",
+    },
+  };
+}
+
+export default async function CraftsmanshipPage() {
+  const cms = await serverFetch<CraftsmanshipCMS>("/content/craftsmanship", { cache: "no-store" }).catch(() => null);
+
+  if (cms && cms.section_enabled === false) {
+    return (
+      <main className="min-h-screen bg-black text-white flex items-center justify-center">
+        <p className="text-gray-500 text-sm tracking-widest uppercase">Page unavailable</p>
+      </main>
+    );
+  }
+
+  const enabledSteps = (cms?.steps || [])
+    .filter((s) => s.enabled !== false)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  const hasIntro = cms?.intro_title || cms?.intro_body;
+
   return (
     <main className="min-h-screen bg-black text-white">
-      {/* Hero */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <Image
-            src="/watches/watch-detail.jpg"
-            alt="BODHIQ craftsmanship — the art of watchmaking"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/70" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black" />
-        </div>
+      {/* Page Header */}
+      <PageHeader
+        eyebrow={cms?.page_eyebrow ?? undefined}
+        title={cms?.page_title ?? undefined}
+        subtitle={cms?.page_subtitle ?? undefined}
+      />
 
-        {/* Content */}
-        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-          <AnimatedSection>
-            <p className="text-xs uppercase tracking-[0.5em] text-[#d4a853] mb-6">
-              The Art of Time
-            </p>
-          </AnimatedSection>
+      {/* Intro Section */}
+      {hasIntro && (
+        <section className="px-6 pb-20">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+            <AnimatedSection direction="left">
+              {cms?.intro_eyebrow && (
+                <p className="text-xs uppercase tracking-[0.35em] text-[#d4a853] mb-4">
+                  {cms.intro_eyebrow}
+                </p>
+              )}
+              {cms?.intro_title && (
+                <h2 className="text-3xl md:text-4xl font-serif leading-tight mb-6">
+                  {cms.intro_title}
+                </h2>
+              )}
+              {cms?.intro_body && (
+                <div className="text-gray-400 leading-8 whitespace-pre-line">
+                  {cms.intro_body}
+                </div>
+              )}
+            </AnimatedSection>
+            {cms?.intro_image && (
+              <AnimatedSection direction="right">
+                <div className="relative h-80 md:h-[500px] overflow-hidden rounded-xl">
+                  <Image
+                    src={cms.intro_image}
+                    alt={cms.intro_title ?? "BODHIQ craftsmanship"}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                </div>
+              </AnimatedSection>
+            )}
+          </div>
+        </section>
+      )}
 
-          <AnimatedSection delay={0.15}>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif leading-[1.1]">
-              <span className="block">Time, Crafted.</span>
-              <span className="block text-gray-500 mt-2">Not Produced.</span>
-            </h1>
-          </AnimatedSection>
-
-          <AnimatedSection delay={0.3}>
-            <p className="text-gray-400 mt-8 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-              Every BODHIQ timepiece is a meditation on impermanence — an
-              instrument built to make each moment worthy of notice.
-            </p>
-          </AnimatedSection>
-        </div>
-
-        {/* Scroll indicator */}
-        <AnimatedSection
-          delay={0.6}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2"
-        >
-          <div className="w-px h-16 bg-gradient-to-b from-[#d4a853]/40 to-transparent" />
-        </AnimatedSection>
-      </section>
-
-      {/* Philosophy */}
-      <section className="px-6 py-32">
-        <div className="max-w-4xl mx-auto text-center">
-          <AnimatedSection>
-            <p className="text-xs uppercase tracking-[0.4em] text-[#d4a853] mb-6">
-              Philosophy
-            </p>
-            <h2 className="text-3xl md:text-5xl font-serif leading-tight mb-8">
-              We believe a watch should be more than an instrument.
-              <br />
-              <span className="text-gray-500">
-                It should be a companion in your relationship with time.
-              </span>
-            </h2>
-            <p className="text-gray-500 text-sm md:text-base leading-8 max-w-2xl mx-auto">
-              In a world that rushes, BODHIQ asks you to pause. To feel the
-              weight on your wrist. To notice the sweep of a second hand. To
-              remember that this moment — right now — will never come again.
-            </p>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      <SectionDivider />
-
-      {/* Craft Process */}
-      <section className="px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <AnimatedSection className="text-center mb-20">
-            <p className="text-xs uppercase tracking-[0.4em] text-[#d4a853] mb-4">
-              The Journey
-            </p>
-            <h2 className="text-3xl md:text-5xl font-serif">
-              From Vision to Wrist
-            </h2>
-          </AnimatedSection>
-
-          <div className="space-y-24">
-            {craftSteps.map((step, i) => (
-              <AnimatedSection
-                key={step.number}
-                direction={i % 2 === 0 ? "left" : "right"}
-              >
-                <div
-                  className={`flex flex-col md:flex-row items-start gap-10 md:gap-16 ${
-                    i % 2 !== 0 ? "md:flex-row-reverse" : ""
-                  }`}
+      {/* Craft Steps */}
+      {enabledSteps.length > 0 && (
+        <section className="px-6 py-20 bg-[#0a0a0a] border-y border-white/5">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid gap-20">
+              {enabledSteps.map((step, index) => (
+                <AnimatedSection
+                  key={`step-${step.number ?? index}`}
+                  direction={index % 2 === 0 ? "left" : "right"}
                 >
-                  {/* Number */}
-                  <div className="shrink-0">
-                    <span className="text-6xl md:text-8xl font-serif text-[#d4a853]/10">
-                      {step.number}
-                    </span>
+                  <div className={`grid md:grid-cols-2 gap-12 md:gap-16 items-center ${index % 2 === 1 ? "md:direction-rtl" : ""}`}>
+                    {/* Text */}
+                    <div className={index % 2 === 1 ? "md:order-2" : ""}>
+                      {step.number && (
+                        <span className="text-7xl md:text-8xl font-serif text-white/5 font-bold select-none leading-none">
+                          {step.number}
+                        </span>
+                      )}
+                      <div className="-mt-4">
+                        <h3 className="text-2xl md:text-3xl font-serif">{step.title}</h3>
+                        {step.subtitle && (
+                          <p className="text-[#d4a853] text-sm mt-2 font-sans">{step.subtitle}</p>
+                        )}
+                        {step.description && (
+                          <p className="text-gray-400 mt-4 leading-8 whitespace-pre-line">
+                            {step.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Image */}
+                    {step.image ? (
+                      <div className={`relative h-72 md:h-96 overflow-hidden rounded-xl ${index % 2 === 1 ? "md:order-1" : ""}`}>
+                        <Image
+                          src={step.image}
+                          alt={step.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      </div>
+                    ) : null}
                   </div>
-
-                  {/* Content */}
-                  <div className="flex-1">
-                    <p className="text-xs uppercase tracking-[0.35em] text-[#d4a853] mb-3">
-                      {step.subtitle}
-                    </p>
-                    <h3 className="text-3xl md:text-4xl font-serif mb-5">
-                      {step.title}
-                    </h3>
-                    <p className="text-gray-400 leading-8 text-sm md:text-base max-w-lg">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              </AnimatedSection>
-            ))}
+                </AnimatedSection>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <SectionDivider />
-
-      {/* Materials */}
-      <section className="px-6 py-20">
-        <div className="max-w-5xl mx-auto">
-          <AnimatedSection className="text-center mb-16">
-            <p className="text-xs uppercase tracking-[0.4em] text-[#d4a853] mb-4">
-              Materials
-            </p>
-            <h2 className="text-3xl md:text-5xl font-serif">
-              Texture. Metal. Dial.
-            </h2>
-            <p className="text-gray-500 mt-5 max-w-xl mx-auto text-sm leading-7">
-              Each material is a character in the story your timepiece tells.
-            </p>
-          </AnimatedSection>
-
-          <div className="grid sm:grid-cols-3 gap-6">
-            {[
-              {
-                title: "316L Stainless Steel",
-                desc: "Surgical-grade steel that resists corrosion, retains its luster, and sits comfortably against skin for decades.",
-              },
-              {
-                title: "Sapphire Crystal",
-                desc: "Second only to diamond in hardness. Virtually scratch-proof, crystal-clear, and engineered to last a lifetime.",
-              },
-              {
-                title: "Genuine Leather",
-                desc: "Ethically sourced, hand-stitched, and designed to develop a unique patina — becoming more beautiful with time.",
-              },
-            ].map((material, i) => (
-              <AnimatedSection key={material.title} delay={i * 0.1}>
-                <div className="glass-card rounded-2xl p-8 h-full hover:border-[#d4a853]/20 transition-colors duration-500">
-                  <span className="text-[#d4a853] text-xs tracking-[0.3em]">
-                    0{i + 1}
-                  </span>
-                  <h3 className="text-lg font-serif mt-3 mb-4">
-                    {material.title}
-                  </h3>
-                  <p className="text-gray-500 text-sm leading-7">
-                    {material.desc}
-                  </p>
-                </div>
-              </AnimatedSection>
-            ))}
+      {/* Closing Quote */}
+      {cms?.closing_quote && (
+        <section className="px-6 py-24 text-center">
+          <div className="max-w-3xl mx-auto">
+            <AnimatedSection direction="up">
+              <div className="w-12 h-[1px] bg-[#d4a853]/40 mx-auto mb-8" />
+              <p className="text-xl md:text-2xl font-serif text-white/80 italic leading-relaxed">
+                &ldquo;{cms.closing_quote}&rdquo;
+              </p>
+              <div className="w-12 h-[1px] bg-[#d4a853]/40 mx-auto mt-8" />
+            </AnimatedSection>
           </div>
-        </div>
-      </section>
-
-      <SectionDivider />
-
-      {/* Closing CTA */}
-      <section className="px-6 py-32">
-        <div className="max-w-3xl mx-auto text-center">
-          <AnimatedSection>
-            <p className="text-xs uppercase tracking-[0.4em] text-[#d4a853] mb-6">
-              Experience It
-            </p>
-            <h2 className="text-4xl md:text-6xl font-serif leading-tight mb-6">
-              Some things must be felt
-              <br />
-              <span className="text-gray-500">to be understood.</span>
-            </h2>
-            <p className="text-gray-500 text-sm leading-7 max-w-lg mx-auto mb-10">
-              Words describe. Touch reveals. Discover what it means to wear a
-              timepiece that was crafted — not manufactured.
-            </p>
-
-            <Link
-              href="/collection"
-              className="inline-block px-10 py-4 bg-[#d4a853] text-black rounded-full text-xs uppercase tracking-widest font-medium hover:bg-[#e8c97a] transition duration-300"
-            >
-              Discover the Collection
-            </Link>
-          </AnimatedSection>
-        </div>
-      </section>
+        </section>
+      )}
     </main>
   );
 }

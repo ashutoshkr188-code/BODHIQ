@@ -2,35 +2,72 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard,
-  ShoppingBag,
-  Package,
-  FileText,
-  ArrowLeft,
-  Settings,
-  Sparkles,
-  Users,
-  Image,
-  List,
+  LayoutDashboard, ShoppingBag, Package, FileText,
+  ArrowLeft, Settings, Sparkles, Users, Image, List,
+  ChevronDown, Home, Globe, FileQuestion, ScrollText,
 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
+import { useState } from "react";
 
-const links = [
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  children?: { name: string; href: string }[];
+}
+
+const links: NavItem[] = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  {
+    name: "Website Content",
+    href: "/dashboard/content",
+    icon: Globe,
+    children: [
+      { name: "Hero & Homepage", href: "/dashboard/content" },
+      { name: "Philosophy", href: "/dashboard/content/philosophy" },
+      { name: "Promo Banner", href: "/dashboard/content/promo" },
+      { name: "Featured Collection", href: "/dashboard/content/featured" },
+    ],
+  },
+  {
+    name: "Pages",
+    href: "/dashboard/pages",
+    icon: FileText,
+    children: [
+      { name: "About", href: "/dashboard/pages/about" },
+      { name: "Craftsmanship", href: "/dashboard/pages/craftsmanship" },
+      { name: "FAQs", href: "/dashboard/pages/faqs" },
+      { name: "Info Pages", href: "/dashboard/pages/info" },
+      { name: "Policy Pages", href: "/dashboard/pages/policies" },
+    ],
+  },
+  { name: "Footer", href: "/dashboard/footer", icon: List },
+  { name: "Header & Nav", href: "/dashboard/global", icon: Home },
+  { name: "Settings & SEO", href: "/dashboard/settings", icon: Settings },
   { name: "Products", href: "/dashboard/products", icon: ShoppingBag },
   { name: "Orders", href: "/dashboard/orders", icon: Package },
-  { name: "Content", href: "/dashboard/content", icon: FileText },
   { name: "Users", href: "/dashboard/users", icon: Users },
-  { name: "Media", href: "/dashboard/media", icon: Image },
-  { name: "Footer", href: "/dashboard/footer", icon: List },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { name: "Media Library", href: "/dashboard/media", icon: Image },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
+
+  const [openGroups, setOpenGroups] = useState<string[]>(() => {
+    // Auto-open the group that contains the current path
+    return links
+      .filter((l) => l.children && (pathname === l.href || l.children.some((c) => pathname.startsWith(c.href))))
+      .map((l) => l.name);
+  });
+
+  const toggleGroup = (name: string) => {
+    setOpenGroups((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
+    );
+  };
 
   return (
     <aside className="w-[260px] min-h-screen bg-[#070707] border-r border-white/[0.04] flex flex-col">
@@ -47,24 +84,74 @@ export function AdminSidebar() {
         </div>
       </div>
 
-      {/* Divider */}
       <div className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1">
-        <p className="text-[9px] uppercase tracking-[0.2em] text-gray-600 font-medium px-3 mb-3">Main Menu</p>
+      <nav className="flex-1 px-4 py-6 space-y-0.5 overflow-y-auto">
         {links.map((link) => {
           const Icon = link.icon;
           const isActive = pathname === link.href;
+          const isGroupOpen = openGroups.includes(link.name);
+          const isChildActive = link.children?.some((c) => pathname.startsWith(c.href));
+
+          if (link.children) {
+            return (
+              <div key={link.name}>
+                <button
+                  onClick={() => toggleGroup(link.name)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left ${
+                    isChildActive
+                      ? "text-[#d4a853] bg-[#d4a853]/5"
+                      : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]"
+                  }`}
+                >
+                  <Icon size={16} className="shrink-0" />
+                  <span className="flex-1 text-[13px] font-medium tracking-wide">{link.name}</span>
+                  <ChevronDown
+                    size={13}
+                    className={`transition-transform duration-200 ${isGroupOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                <AnimatePresence initial={false}>
+                  {isGroupOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pl-9 pr-2 py-1 space-y-0.5">
+                        {link.children.map((child) => {
+                          const isChildItemActive = pathname === child.href;
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              className={`block px-3 py-2 rounded-lg text-[12px] transition-all duration-200 ${
+                                isChildItemActive
+                                  ? "text-[#d4a853] bg-[#d4a853]/8 font-medium"
+                                  : "text-gray-600 hover:text-gray-400 hover:bg-white/[0.02]"
+                              }`}
+                            >
+                              {child.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          }
 
           return (
             <Link
               key={link.href}
               href={link.href}
               className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group ${
-                isActive
-                  ? "text-black"
-                  : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]"
+                isActive ? "text-black" : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.03]"
               }`}
             >
               {isActive && (
@@ -88,7 +175,6 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* User Info */}
       <div className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
       {user && (
@@ -109,7 +195,6 @@ export function AdminSidebar() {
         </div>
       )}
 
-      {/* Back to Store */}
       <div className="px-4 pb-6">
         <Link
           href="/"

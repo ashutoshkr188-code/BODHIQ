@@ -1,23 +1,38 @@
 /**
  * Server-side API client for Next.js Server Components and Route Handlers.
  *
- * Usage in a Server Component:
- *   import { serverFetch } from "@/lib/apiClient";
- *   const data = await serverFetch("/products/my-watch");
- *
- * Usage in a Route Handler (with Clerk token forwarding):
- *   import { routeFetch } from "@/lib/apiClient";
- *   const res = await routeFetch("/orders", token, { method: "POST", body: JSON.stringify(payload) });
+ * SSR calls use INTERNAL_API_URL (direct container-to-container, no Nginx loop).
+ * Client-side calls use NEXT_PUBLIC_API_URL (goes through Nginx/public URL).
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Client-side public URL (baked in at build time)
+const PUBLIC_API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// Server-side internal URL — bypasses Nginx for SSR calls (avoids 301 redirect loop)
+// Set INTERNAL_API_URL=http://backend:8000 in production .env
+const SERVER_API_BASE =
+  typeof window === "undefined"
+    ? (process.env.INTERNAL_API_URL ?? PUBLIC_API_BASE)
+    : PUBLIC_API_BASE;
 
 /**
  * Build a full API URL from a path like "/products/my-watch"
+ * Uses internal URL for SSR, public URL for client.
  */
 export function apiUrl(path: string): string {
   const clean = path.startsWith("/") ? path : `/${path}`;
-  return `${API_BASE}/api/v1${clean}`;
+  const base =
+    typeof window === "undefined" ? SERVER_API_BASE : PUBLIC_API_BASE;
+  return `${base}/api/v1${clean}`;
+}
+
+/**
+ * Build a public-facing API URL (always uses NEXT_PUBLIC_API_URL).
+ * Use for client components and browser-side requests.
+ */
+export function publicApiUrl(path: string): string {
+  const clean = path.startsWith("/") ? path : `/${path}`;
+  return `${PUBLIC_API_BASE}/api/v1${clean}`;
 }
 
 /**
@@ -74,7 +89,7 @@ export async function routeFetch<T = unknown>(
   token: string,
   options?: RequestInit
 ): Promise<T> {
-  const url = apiUrl(path);
+  const url = publicApiUrl(path);
 
   const res = await fetch(url, {
     cache: "no-store", // Route handlers should never cache
@@ -138,7 +153,7 @@ export async function authedServerFetch<T = unknown>(
 
 /**
  * Resolve a media URL. If it's a local backend upload (starts with /uploads),
- * prepends the backend API base URL. Otherwise returns it as-is.
+ * prepends the PUBLIC backend API base URL. Otherwise returns it as-is.
  */
 export function resolveMediaUrl(url: string | null | undefined): string {
   if (!url) return "";
@@ -146,7 +161,7 @@ export function resolveMediaUrl(url: string | null | undefined): string {
     return url;
   }
   if (url.startsWith("/uploads")) {
-    return `${API_BASE}${url}`;
+    return `${PUBLIC_API_BASE}${url}`;
   }
   return url;
 }

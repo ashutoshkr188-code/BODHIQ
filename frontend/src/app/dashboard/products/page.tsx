@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { resolveMediaUrl } from "@/lib/apiClient";
 import { adminGetProducts, adminCreateProduct, adminUpdateProduct, adminDeleteProduct, adminGetCategories, uploadMultipleFiles } from "@/features/dashboard/api";
 import { DashboardModal } from "@/features/dashboard/components/DashboardModal";
-import { DashboardToast, useToast } from "@/features/dashboard/components/DashboardToast";
+import { DashboardToast, ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { DashboardSkeleton } from "@/features/dashboard/components/DashboardSkeleton";
 import type { Product, PaginatedResponse } from "@/types/api";
 import {
@@ -920,3 +920,5 @@ export default function ProductsPage() {
     </div>
   );
 }
+
+

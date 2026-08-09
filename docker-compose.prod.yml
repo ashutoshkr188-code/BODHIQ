@@ -104,6 +104,9 @@ services:
     image: bodhiq/frontend:latest
     env_file:
       - .env.production
+    environment:
+      # Internal URL for SSR server-to-server calls (bypasses Nginx 301 redirect)
+      INTERNAL_API_URL: "http://backend:8000"
     expose:
       - "3000"
     healthcheck:

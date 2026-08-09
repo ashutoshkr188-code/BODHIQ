@@ -35,11 +35,16 @@ async def lifespan(app: FastAPI):
     """Initialize database on startup."""
     init_db()
 
+    # Run safe additive column migrations for existing tables
+    from app.db.migrate import run_cms_migrations
+    run_cms_migrations()
+
     # Auto-seed if the DB is empty
     from app.db.seed import seed_if_empty
     seed_if_empty()
 
     yield
+
 
 
 app = FastAPI(

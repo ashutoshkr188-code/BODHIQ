@@ -5,7 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { adminGetOrders, adminUpdateOrderStatus } from "@/features/dashboard/api";
 import { DashboardModal } from "@/features/dashboard/components/DashboardModal";
-import { DashboardToast, useToast } from "@/features/dashboard/components/DashboardToast";
+import { DashboardToast, ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { DashboardSkeleton } from "@/features/dashboard/components/DashboardSkeleton";
 import type { Order } from "@/types/api";
 import {
@@ -314,3 +314,5 @@ function OrderDetailView({ order }: { order: Order }) {
     </div>
   );
 }
+
+

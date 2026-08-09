@@ -31,21 +31,24 @@ const fadeUp: Variants = {
 };
 
 export interface HeaderData {
-  title?: string;
-  tagline?: string;
-  description?: string;
-  ctaText?: string;
-  ctaLink?: string;
+  badgeText?: string | null;
+  badgeVisible?: boolean;
+  title?: string | null;
+  tagline?: string | null;
+  description?: string | null;
+  ctaText?: string | null;
+  ctaLink?: string | null;
   backgroundMedia?: BackgroundMediaItem[];
 }
 
 export default function Header({ data }: { data?: HeaderData }) {
-  const title = data?.title ?? "BODHIQ";
-  const tagline = data?.tagline ?? "Imperfect. Almost.";
-  const description =
-    data?.description ??
-    "A minimalist luxury timepiece where ancient craft meets modern precision.\nHand-finished dial. Kintsugi-inspired detailing. Made for those who find beauty in the imperfect.";
-  const ctaText = data?.ctaText ?? "Explore";
+  // CMS is the single source of truth. No hardcoded fallbacks for editorial content.
+  const showBadge = data?.badgeVisible !== false && !!data?.badgeText;
+  const badgeText = data?.badgeText ?? null;
+  const title = data?.title ?? null;
+  const tagline = data?.tagline ?? null;
+  const description = data?.description ?? null;
+  const ctaText = data?.ctaText ?? null;
   const ctaLink = data?.ctaLink ?? "/collection";
 
   // Use CMS background media if available, fallback to local videos
@@ -92,7 +95,7 @@ export default function Header({ data }: { data?: HeaderData }) {
             {activeMedia.type === "image" ? (
               <img
                 src={resolveMediaUrl(activeMedia.url)}
-                alt={title}
+                alt={title ?? "BODHIQ"}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -103,7 +106,7 @@ export default function Header({ data }: { data?: HeaderData }) {
                 playsInline
                 preload="auto"
                 onEnded={handleVideoEnded}
-                aria-label={`${title} cinematic reveal`}
+                aria-label={`${title ?? "BODHIQ"} cinematic reveal`}
                 className="w-full h-full object-cover"
               />
             )}
@@ -119,45 +122,58 @@ export default function Header({ data }: { data?: HeaderData }) {
         animate="show"
         className="relative z-10 text-center px-6 max-w-4xl pointer-events-auto"
       >
-        <motion.div variants={fadeUp} className="mb-8">
-          <span className="inline-block px-5 py-1.5 rounded-full border border-[#d4a853]/30 bg-[#d4a853]/10 text-[10px] uppercase tracking-[0.3em] text-[#d4a853] backdrop-blur-sm">
-            Launch Edition — Limited First Drop
-          </span>
-        </motion.div>
+        {/* Badge — only render if badgeVisible=true AND badgeText is non-empty */}
+        {showBadge && badgeText && (
+          <motion.div variants={fadeUp} className="mb-8">
+            <span className="inline-block px-5 py-1.5 rounded-full border border-[#d4a853]/30 bg-[#d4a853]/10 text-[10px] uppercase tracking-[0.3em] text-[#d4a853] backdrop-blur-sm">
+              {badgeText}
+            </span>
+          </motion.div>
+        )}
 
-        <motion.h1
-          variants={fadeUp}
-          className="text-5xl md:text-8xl font-serif leading-[1.05] tracking-tight"
-        >
-          <span className="block text-white">{title}</span>
-        </motion.h1>
+        {/* Title — only render if non-null */}
+        {title && (
+          <motion.h1
+            variants={fadeUp}
+            className="text-5xl md:text-8xl font-serif leading-[1.05] tracking-tight"
+          >
+            <span className="block text-white">{title}</span>
+          </motion.h1>
+        )}
 
-        <motion.p
-          variants={fadeUp}
-          className="text-xl md:text-3xl font-serif text-[#d4a853]/90 mt-4 italic"
-        >
-          {tagline}
-        </motion.p>
+        {/* Tagline — only render if non-null */}
+        {tagline && (
+          <motion.p
+            variants={fadeUp}
+            className="text-xl md:text-3xl font-serif text-[#d4a853]/90 mt-4 italic"
+          >
+            {tagline}
+          </motion.p>
+        )}
 
-        <motion.p
-          variants={fadeUp}
-          className="text-gray-300 mt-6 text-sm md:text-base max-w-xl mx-auto leading-relaxed whitespace-pre-line drop-shadow-md"
-        >
-          {description}
-        </motion.p>
+        {/* Description — only render if non-null */}
+        {description && (
+          <motion.p
+            variants={fadeUp}
+            className="text-gray-300 mt-6 text-sm md:text-base max-w-xl mx-auto leading-relaxed whitespace-pre-line drop-shadow-md"
+          >
+            {description}
+          </motion.p>
+        )}
 
-        <motion.div
-          variants={fadeUp}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          {ctaText && ctaText.trim() !== "" && (
+        {/* CTA Button — only render if ctaText is non-null and non-empty */}
+        {ctaText && ctaText.trim() !== "" && (
+          <motion.div
+            variants={fadeUp}
+            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
             <Link href={ctaLink}>
               <button className="px-10 py-3.5 bg-[#d4a853] text-black uppercase tracking-widest text-xs font-medium hover:bg-[#e8c97a] hover:scale-105 transition-all duration-300 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4a853]">
                 {ctaText}
               </button>
             </Link>
-          )}
-        </motion.div>
+          </motion.div>
+        )}
       </motion.div>
 
       <motion.div

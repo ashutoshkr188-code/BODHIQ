@@ -5,7 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { uploadMultipleFiles, adminGetUploadedFiles, type UploadedFile } from "@/features/dashboard/api";
 import { resolveMediaUrl } from "@/lib/apiClient";
-import { DashboardToast, useToast } from "@/features/dashboard/components/DashboardToast";
+import { DashboardToast, ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { Upload, Copy, Check, FileText, Image as ImageIcon, Play, Trash } from "lucide-react";
 
 export default function MediaPage() {
@@ -188,3 +188,5 @@ export default function MediaPage() {
     </div>
   );
 }
+
+

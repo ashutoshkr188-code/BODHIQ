@@ -1,130 +1,225 @@
 import { Metadata } from "next";
-import PageHeader from "@/components/ui/PageHeader";
+import { serverFetch } from "@/lib/apiClient";
+import Image from "next/image";
+import Link from "next/link";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import SectionDivider from "@/components/ui/SectionDivider";
-import Image from "next/image";
+import PageHeader from "@/components/ui/PageHeader";
 
-export const metadata: Metadata = {
-  title: "About Us",
-  description:
-    "Discover the story behind BODHIQ — luxury timepieces born from the intersection of ancient wisdom and modern precision engineering.",
-  keywords: [
-    "BODHIQ about",
-    "luxury watch brand story",
-    "Indian luxury watches",
-    "BODHIQ history",
-  ],
-  openGraph: {
-    title: "About BODHIQ — Our Story",
-    description:
-      "Discover the story behind BODHIQ — luxury timepieces born from the intersection of ancient wisdom and modern precision engineering.",
-    images: ["/watches/watch-detail.jpg"],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "About BODHIQ — Our Story",
-    description:
-      "Discover the story behind BODHIQ — luxury timepieces born from the intersection of ancient wisdom and modern precision engineering.",
-  },
-};
+interface AboutCMS {
+  section_enabled: boolean;
+  page_eyebrow: string | null;
+  page_title: string | null;
+  page_subtitle: string | null;
+  origin_eyebrow: string | null;
+  origin_title: string | null;
+  origin_body: string | null;
+  origin_image: string | null;
+  mission_eyebrow: string | null;
+  mission_title: string | null;
+  mission_body: string | null;
+  quote_text: string | null;
+  quote_attribution: string | null;
+  team_eyebrow: string | null;
+  team_title: string | null;
+  team_body: string | null;
+  team_image: string | null;
+  cta_eyebrow: string | null;
+  cta_title: string | null;
+  cta_text: string | null;
+  cta_link: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+}
 
-export default function AboutPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const cms = await serverFetch<AboutCMS>("/content/about", { cache: "no-store" }).catch(() => null);
+  return {
+    title: cms?.meta_title || "About Us",
+    description: cms?.meta_description || "Discover the story behind BODHIQ.",
+    openGraph: {
+      title: cms?.meta_title || "About BODHIQ",
+      description: cms?.meta_description || "Discover the story behind BODHIQ.",
+      images: ["/watches/watch-detail.jpg"],
+    },
+  };
+}
+
+export default async function AboutPage() {
+  const cms = await serverFetch<AboutCMS>("/content/about", { cache: "no-store" }).catch(() => null);
+
+  if (cms && cms.section_enabled === false) {
+    return (
+      <main className="min-h-screen bg-black text-white flex items-center justify-center">
+        <p className="text-gray-500 text-sm tracking-widest uppercase">Page unavailable</p>
+      </main>
+    );
+  }
+
+  const hasOrigin = cms?.origin_title || cms?.origin_body;
+  const hasMission = cms?.mission_title || cms?.mission_body;
+  const hasQuote = cms?.quote_text;
+  const hasTeam = cms?.team_title || cms?.team_body;
+  const hasCta = cms?.cta_title || cms?.cta_text;
+
   return (
     <main className="min-h-screen bg-black text-white">
+      {/* Page Header */}
       <PageHeader
-        eyebrow="Our Story"
-        title="Where Wisdom Meets Precision"
-        subtitle="BODHIQ is not just a brand — it is a philosophy etched in time. Every timepiece we craft carries the weight of centuries of wisdom and the precision of modern innovation."
+      eyebrow={cms?.page_eyebrow ?? undefined}
+        title={cms?.page_title ?? undefined}
+        subtitle={cms?.page_subtitle ?? undefined}
       />
 
       {/* Origin Story */}
-      <section className="px-6 pb-20">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <AnimatedSection direction="left">
-            <p className="text-xs uppercase tracking-[0.35em] text-[#d4a853] mb-4">
-              The Origin
-            </p>
-            <h2 className="text-3xl md:text-4xl font-serif leading-tight mb-6">
-              Born from a Vision
-            </h2>
-            <p className="text-gray-400 leading-8 mb-4">
-              <span className="italic text-white">Bodhi</span> — Sanskrit for
-              enlightenment, the moment of profound understanding.{" "}
-              <span className="italic text-white">IQ</span> — the measure of
-              intellect and precision.
-            </p>
-            <p className="text-gray-500 leading-8 mb-4">
-              BODHIQ was founded with a singular belief: that true luxury is not
-              about excess, but about meaning. Each timepiece is designed to be
-              more than an accessory — it is a companion in your journey through
-              time.
-            </p>
-            <p className="text-gray-500 leading-8">
-              We don&apos;t make watches to tell time. We craft instruments that
-              make time worth telling.
-            </p>
-          </AnimatedSection>
+      {hasOrigin && (
+        <section className="px-6 pb-20">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+            <AnimatedSection direction="left">
+              {cms?.origin_eyebrow && (
+                <p className="text-xs uppercase tracking-[0.35em] text-[#d4a853] mb-4">
+                  {cms.origin_eyebrow}
+                </p>
+              )}
+              {cms?.origin_title && (
+                <h2 className="text-3xl md:text-4xl font-serif leading-tight mb-6">
+                  {cms.origin_title}
+                </h2>
+              )}
+              {cms?.origin_body && (
+                <div className="text-gray-400 leading-8 whitespace-pre-line">
+                  {cms.origin_body}
+                </div>
+              )}
+            </AnimatedSection>
 
-          <AnimatedSection direction="right">
-            <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden border border-[#d4a853]/10">
-              <Image
-                src="/watches/watch-detail.jpg"
-                alt="BODHIQ luxury timepiece — precision craftsmanship detail"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-black/20 to-transparent" />
-            </div>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      <SectionDivider />
-
-      {/* Pillars */}
-      <section className="px-6 pb-24">
-        <div className="max-w-6xl mx-auto">
-          <AnimatedSection className="text-center mb-16">
-            <p className="text-xs uppercase tracking-[0.35em] text-[#d4a853] mb-4">
-              What Drives Us
-            </p>
-            <h2 className="text-3xl md:text-5xl font-serif">
-              The Three Pillars of BODHIQ
-            </h2>
-          </AnimatedSection>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Wisdom",
-                desc: "Rooted in ancient philosophy, each design reflects centuries of knowledge about the nature of time and impermanence.",
-              },
-              {
-                title: "Precision",
-                desc: "Every component is engineered with meticulous attention to detail, where tolerances are measured in fractions of a second.",
-              },
-              {
-                title: "Presence",
-                desc: "Our timepieces are designed to anchor you to the present moment — a reminder that now is all we truly possess.",
-              },
-            ].map((pillar, i) => (
-              <AnimatedSection key={pillar.title} delay={i * 0.12}>
-                <div className="glass-card rounded-2xl p-8 h-full hover:border-[#d4a853]/30 transition-colors duration-500">
-                  <span className="text-[#d4a853] text-xs uppercase tracking-[0.35em]">
-                    0{i + 1}
-                  </span>
-                  <h3 className="text-2xl font-serif mt-3 mb-4">
-                    {pillar.title}
-                  </h3>
-                  <p className="text-gray-400 leading-7 text-sm">
-                    {pillar.desc}
-                  </p>
+            {cms?.origin_image ? (
+              <AnimatedSection direction="right">
+                <div className="relative h-80 md:h-[500px] overflow-hidden rounded-xl">
+                  <Image
+                    src={cms.origin_image}
+                    alt={cms.origin_title ?? "BODHIQ origin"}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 </div>
               </AnimatedSection>
-            ))}
+            ) : null}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {hasOrigin && <SectionDivider />}
+
+      {/* Mission */}
+      {hasMission && (
+        <section className="px-6 py-20">
+          <div className="max-w-4xl mx-auto text-center">
+            <AnimatedSection direction="up">
+              {cms?.mission_eyebrow && (
+                <p className="text-xs uppercase tracking-[0.35em] text-[#d4a853] mb-4">
+                  {cms.mission_eyebrow}
+                </p>
+              )}
+              {cms?.mission_title && (
+                <h2 className="text-3xl md:text-4xl font-serif leading-tight mb-6">
+                  {cms.mission_title}
+                </h2>
+              )}
+              {cms?.mission_body && (
+                <p className="text-gray-400 leading-8 max-w-2xl mx-auto whitespace-pre-line">
+                  {cms.mission_body}
+                </p>
+              )}
+            </AnimatedSection>
+          </div>
+        </section>
+      )}
+
+      {/* Quote Banner */}
+      {hasQuote && (
+        <section className="relative px-6 py-24 bg-[#0a0a0a] border-y border-white/5">
+          <div className="max-w-4xl mx-auto text-center">
+            <AnimatedSection direction="up">
+              <p className="text-2xl md:text-4xl font-serif text-white/80 italic leading-relaxed">
+                &ldquo;{cms!.quote_text}&rdquo;
+              </p>
+              {cms?.quote_attribution && (
+                <p className="mt-6 text-[10px] uppercase tracking-[0.4em] text-[#d4a853]">
+                  {cms.quote_attribution}
+                </p>
+              )}
+            </AnimatedSection>
+          </div>
+        </section>
+      )}
+
+      {/* Team */}
+      {hasTeam && (
+        <section className="px-6 py-20">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+            {cms?.team_image ? (
+              <AnimatedSection direction="left">
+                <div className="relative h-80 md:h-[500px] overflow-hidden rounded-xl">
+                  <Image
+                    src={cms.team_image}
+                    alt={cms.team_title ?? "BODHIQ team"}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                </div>
+              </AnimatedSection>
+            ) : null}
+
+            <AnimatedSection direction="right">
+              {cms?.team_eyebrow && (
+                <p className="text-xs uppercase tracking-[0.35em] text-[#d4a853] mb-4">
+                  {cms.team_eyebrow}
+                </p>
+              )}
+              {cms?.team_title && (
+                <h2 className="text-3xl md:text-4xl font-serif leading-tight mb-6">
+                  {cms.team_title}
+                </h2>
+              )}
+              {cms?.team_body && (
+                <p className="text-gray-400 leading-8 whitespace-pre-line">
+                  {cms.team_body}
+                </p>
+              )}
+            </AnimatedSection>
+          </div>
+        </section>
+      )}
+
+      {/* CTA Strip */}
+      {hasCta && (
+        <section className="px-6 py-20 bg-[#0a0a0a] border-t border-white/5">
+          <div className="max-w-2xl mx-auto text-center">
+            <AnimatedSection direction="up">
+              {cms?.cta_eyebrow && (
+                <p className="text-xs uppercase tracking-[0.35em] text-[#d4a853] mb-4">
+                  {cms.cta_eyebrow}
+                </p>
+              )}
+              {cms?.cta_title && (
+                <h2 className="text-2xl md:text-3xl font-serif mb-8">{cms.cta_title}</h2>
+              )}
+              {cms?.cta_text && (
+                <Link href={cms.cta_link || "/collection"}>
+                  <button className="px-10 py-3.5 bg-[#d4a853] text-black uppercase tracking-widest text-xs font-medium hover:bg-[#e8c97a] hover:scale-105 transition-all duration-300 rounded-full">
+                    {cms.cta_text}
+                  </button>
+                </Link>
+              )}
+            </AnimatedSection>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

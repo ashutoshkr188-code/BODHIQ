@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { adminGetUsers, adminUpdateUserRole } from "@/features/dashboard/api";
-import { DashboardToast, useToast } from "@/features/dashboard/components/DashboardToast";
+import { DashboardToast, ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { DashboardSkeleton } from "@/features/dashboard/components/DashboardSkeleton";
 import { Search, Shield, User as UserIcon, ShieldAlert, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -252,3 +252,5 @@ export default function UsersPage() {
     </div>
   );
 }
+
+

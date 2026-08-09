@@ -9,5 +9,15 @@ from app.models.product import Product  # noqa: F401
 from app.models.order import Order, OrderItem  # noqa: F401
 from app.models.address import Address  # noqa: F401
 from app.models.notify import BackInStockRequest  # noqa: F401
-from app.models.cms import HeaderContent, PhilosophyContent, HomepageContent  # noqa: F401
+from app.models.cms import (  # noqa: F401
+    HeaderContent,
+    PhilosophyContent,
+    HomepageContent,
+    PromoContent,
+    FeaturedCollectionContent,
+    AboutContent,
+    CraftsmanshipContent,
+    FAQItem,
+    CMSPageContent,
+)
 from app.models.settings import SiteSettings, FooterSettings  # noqa: F401

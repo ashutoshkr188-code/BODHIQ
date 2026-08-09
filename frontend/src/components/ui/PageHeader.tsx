@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 interface PageHeaderProps {
   eyebrow?: string;
-  title: string;
+  title?: string;
   subtitle?: string;
   centered?: boolean;
 }
@@ -29,14 +29,16 @@ export default function PageHeader({
           </motion.p>
         )}
 
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-          className="text-4xl md:text-6xl lg:text-7xl font-serif leading-tight"
-        >
-          {title}
-        </motion.h1>
+        {title && (
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+            className="text-4xl md:text-6xl lg:text-7xl font-serif leading-tight"
+          >
+            {title}
+          </motion.h1>
+        )}
 
         {subtitle && (
           <motion.p

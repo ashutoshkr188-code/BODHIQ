@@ -236,3 +236,52 @@ export async function adminUpdateOrderStatus(token: string, id: string, status: 
   });
 }
 
+// ─── New CMS API functions ──────────────────────────────────────────────────────
+
+export async function getContentFeaturedCollection(token: string): Promise<any> {
+  return routeFetch<any>("/content/featured-collection", token);
+}
+
+export async function updateContentFeaturedCollection(token: string, payload: any): Promise<any> {
+  return routeFetch<any>("/content/featured-collection", token, { method: "PUT", body: JSON.stringify(payload) });
+}
+
+export async function getContentAbout(token: string): Promise<any> {
+  return routeFetch<any>("/content/about", token);
+}
+
+export async function updateContentAbout(token: string, payload: any): Promise<any> {
+  return routeFetch<any>("/content/about", token, { method: "PUT", body: JSON.stringify(payload) });
+}
+
+export async function getContentCraftsmanship(token: string): Promise<any> {
+  return routeFetch<any>("/content/craftsmanship", token);
+}
+
+export async function updateContentCraftsmanship(token: string, payload: any): Promise<any> {
+  return routeFetch<any>("/content/craftsmanship", token, { method: "PUT", body: JSON.stringify(payload) });
+}
+
+export async function getAllFaqs(token: string): Promise<any[]> {
+  return routeFetch<any[]>("/content/faqs/all", token);
+}
+
+export async function bulkReplaceFaqs(token: string, items: any[]): Promise<any[]> {
+  return routeFetch<any[]>("/content/faqs/bulk", token, { method: "PUT", body: JSON.stringify({ items }) });
+}
+
+export async function createFaqItem(token: string, payload: any): Promise<any> {
+  return routeFetch<any>("/content/faqs", token, { method: "POST", body: JSON.stringify(payload) });
+}
+
+export async function deleteFaqItem(token: string, id: number): Promise<void> {
+  await routeFetch<void>(`/content/faqs/${id}`, token, { method: "DELETE" });
+}
+
+export async function getCMSPage(token: string, slug: string): Promise<any> {
+  return routeFetch<any>(`/content/page/${slug}`, token);
+}
+
+export async function updateCMSPage(token: string, slug: string, payload: any): Promise<any> {
+  return routeFetch<any>(`/content/page/${slug}`, token, { method: "PUT", body: JSON.stringify(payload) });
+}

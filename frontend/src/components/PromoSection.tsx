@@ -5,38 +5,34 @@ import Link from "next/link";
 import { resolveMediaUrl } from "@/lib/apiClient";
 
 export interface PromoData {
-  title?: string;
-  description?: string;
+  sectionEnabled?: boolean;
+  eyebrowLabel?: string | null;
+  title?: string | null;
+  description?: string | null;
   bgType?: string;
   bgUrl?: string | null;
-  buttonText?: string;
-  buttonLink?: string;
+  buttonText?: string | null;
+  buttonLink?: string | null;
 }
 
 export default function PromoSection({ data }: { data?: PromoData }) {
-  // If the admin cleared the banner (both title and background are empty/null/blank), hide the section completely
-  const isCleared = data && (
-    (!data.title || data.title.trim() === "") &&
-    (!data.bgUrl || data.bgUrl.trim() === "")
-  );
-  if (isCleared) {
-    return null;
-  }
+  // Hide if disabled or no meaningful content
+  if (!data || data.sectionEnabled === false) return null;
+  if (!data.title && !data.bgUrl) return null;
 
-  const title = data?.title ?? "The Art of Kintsugi";
-  const description = data?.description ?? "Every line tells a story. Inspired by the Japanese art of repairing broken pottery with gold, our timepieces celebrate transformation.";
-  const bgType = data?.bgType || "image";
-  const bgUrl = data?.bgUrl 
-    ? resolveMediaUrl(data.bgUrl) 
-    : (bgType === "video" ? "/videos/clip-1.mp4" : "/watches/shunya-1/hero.jpg");
-  const buttonText = data?.buttonText ?? "Explore Craftsmanship";
-  const buttonLink = data?.buttonLink || "/collection";
+  const eyebrowLabel = data.eyebrowLabel ?? null;
+  const title = data.title ?? null;
+  const description = data.description ?? null;
+  const bgType = data.bgType || "image";
+  const bgUrl = data.bgUrl ? resolveMediaUrl(data.bgUrl) : null;
+  const buttonText = data.buttonText ?? null;
+  const buttonLink = data.buttonLink || "/collection";
 
   return (
     <section className="relative h-[80vh] w-full flex items-center justify-center bg-black overflow-hidden border-y border-white/[0.03]">
-      {/* Background Media Engine */}
+      {/* Background Media */}
       <div className="absolute inset-0 z-0">
-        {bgType === "video" && bgUrl ? (
+        {bgUrl && bgType === "video" ? (
           <video
             src={bgUrl}
             autoPlay
@@ -45,18 +41,17 @@ export default function PromoSection({ data }: { data?: PromoData }) {
             playsInline
             className="w-full h-full object-cover opacity-60 scale-105"
           />
-        ) : (
+        ) : bgUrl ? (
           <img
             src={bgUrl}
-            alt={title}
+            alt={title ?? ""}
             className="w-full h-full object-cover opacity-60 scale-105 transition-all duration-1000"
           />
-        )}
-        {/* Luxury dark gradient overlay for text legibility */}
+        ) : null}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80 z-10" />
       </div>
 
-      {/* Content Container */}
+      {/* Content */}
       <div className="relative z-20 max-w-4xl mx-auto text-center px-6">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -65,13 +60,17 @@ export default function PromoSection({ data }: { data?: PromoData }) {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="space-y-6"
         >
-          <p className="text-[10px] uppercase tracking-[0.4em] text-[#d4a853] font-semibold">
-            Featured Spotlight
-          </p>
+          {eyebrowLabel && (
+            <p className="text-[10px] uppercase tracking-[0.4em] text-[#d4a853] font-semibold">
+              {eyebrowLabel}
+            </p>
+          )}
 
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif text-white leading-tight tracking-tight">
-            {title}
-          </h2>
+          {title && (
+            <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif text-white leading-tight tracking-tight">
+              {title}
+            </h2>
+          )}
 
           {description && description.trim() !== "" && (
             <>

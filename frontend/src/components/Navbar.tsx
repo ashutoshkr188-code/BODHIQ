@@ -23,6 +23,7 @@ interface NavLink {
 interface NavSettings {
   navLinks?: NavLink[];
   logoText?: string;
+  mobileTagline?: string | null;
 }
 
 const navLinks = [
@@ -43,6 +44,7 @@ const navLinks = [
 export default function Navbar({ settings }: { settings?: NavSettings }) {
   const finalNavLinks = settings?.navLinks && settings.navLinks.length > 0 ? settings.navLinks : navLinks;
   const brandName = settings?.logoText || "BODHIQ";
+  const mobileTagline = settings?.mobileTagline ?? null;
   const { isSignedIn, user } = useUser();
   const router = useRouter();
   const pathname = usePathname();
@@ -390,12 +392,14 @@ export default function Navbar({ settings }: { settings?: NavSettings }) {
                   )}
                 </div>
 
-                {/* Bottom Tagline */}
-                <div className="mt-12 pt-6 border-t border-white/5">
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600">
-                    Timeless Craftsmanship
-                  </p>
-                </div>
+                {/* Bottom Tagline — CMS controlled */}
+                {mobileTagline && (
+                  <div className="mt-12 pt-6 border-t border-white/5">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-gray-600">
+                      {mobileTagline}
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </>

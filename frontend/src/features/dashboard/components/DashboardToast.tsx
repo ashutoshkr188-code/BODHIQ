@@ -89,3 +89,24 @@ export function useToast() {
 
   return { toast, show, hide };
 }
+
+/**
+ * Convenience wrapper that accepts the toast object returned by useToast().
+ * Usage: <DashboardToast toast={toast} onClose={hideToast} />
+ */
+export function ToastFromHook({
+  toast,
+  onClose,
+}: {
+  toast: { message: string; type: ToastType; visible: boolean };
+  onClose: () => void;
+}) {
+  return (
+    <DashboardToast
+      message={toast.message}
+      type={toast.type}
+      visible={toast.visible}
+      onClose={onClose}
+    />
+  );
+}
