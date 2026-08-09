@@ -2,429 +2,325 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { motion } from "framer-motion";
-import { getFooterSettings, updateFooterSettings } from "@/features/dashboard/api";
-import { DashboardToast, ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
-import { Save, Plus, Trash, Globe, Shield, RefreshCw } from "lucide-react";
+import { Save, RefreshCw, Plus, Trash2, GripVertical } from "lucide-react";
+import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
 
-interface LinkItem {
-  label: string;
-  href: string;
-}
+import {
+  getFooterSettings, updateFooterSettings,
+} from "@/features/dashboard/api";
 
-interface SocialLinkItem {
-  platform: string;
-  href: string;
-  icon: string;
-}
+const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+  <input
+    {...props}
+    className="w-full bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#d4a853]/40 transition placeholder:text-gray-700"
+  />
+);
 
-interface FooterFormData {
-  newsletterText: string;
-  newsletterPlaceholder: string;
-  newsletterButtonText: string;
-  companyLinks: LinkItem[];
-  quickLinks: LinkItem[];
-  contactEmailPrimary: string;
-  contactEmailSecondary: string;
-  socialLinks: SocialLinkItem[];
-  copyrightText: string;
-  bottomTagline: string;
-}
+const Textarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+  <textarea
+    {...props}
+    rows={4}
+    className="w-full bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#d4a853]/40 transition placeholder:text-gray-700 resize-y"
+  />
+);
 
-const emptyForm: FooterFormData = {
-  newsletterText: "",
-  newsletterPlaceholder: "",
-  newsletterButtonText: "",
-  companyLinks: [],
-  quickLinks: [],
-  contactEmailPrimary: "",
-  contactEmailSecondary: "",
-  socialLinks: [],
-  copyrightText: "",
-  bottomTagline: "",
-};
+const SectionCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="bg-[#0d0d0d] border border-white/5 rounded-2xl p-6 space-y-5">
+    <h3 className="text-base font-serif text-white/80">{title}</h3>
+    <div className="h-px bg-white/5" />
+    {children}
+  </div>
+);
 
-export default function FooterPage() {
+const SaveBtn = ({ saving, onClick }: { saving: boolean; onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    disabled={saving}
+    className="flex items-center gap-2 px-5 py-2 bg-[#d4a853] hover:bg-[#e8c97a] text-black text-xs uppercase tracking-widest font-semibold rounded-xl transition disabled:opacity-50"
+  >
+    {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+    {saving ? "Saving…" : "Save Changes"}
+  </button>
+);
+
+export default function FooterSettingsPage() {
   const { getToken } = useAuth();
-  const [formData, setFormData] = useState<FooterFormData>({ ...emptyForm });
+  const { toast, show: showToast, hide: hideToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  const { toast, show: showToast, hide: hideToast } = useToast();
+  
+  const [form, setForm] = useState<any>({
+    newsletter_eyebrow: "",
+    newsletter_title: "",
+    newsletter_text: "",
+    newsletter_placeholder: "",
+    newsletter_button_text: "",
+    company_section_label: "",
+    quick_links_section_label: "",
+    contact_section_label: "",
+    contact_email_primary: "",
+    contact_email_secondary: "",
+    help_text: "",
+    gifting_text: "",
+    copyright_text: "",
+    bottom_tagline: "",
+    visibility: {},
+    company_links: [],
+    quick_links: [],
+  });
 
   useEffect(() => {
-    loadSettings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    (async () => {
+      const token = await getToken();
+      if (!token) return;
+      const data = await getFooterSettings(token).catch(() => null);
+      if (data) {
+        // Map from camelCase to snake_case to match form and models
+        const mapped = {
+          newsletter_eyebrow: data.newsletterEyebrow,
+          newsletter_title: data.newsletterTitle,
+          newsletter_text: data.newsletterText,
+          newsletter_placeholder: data.newsletterPlaceholder,
+          newsletter_button_text: data.newsletterButtonText,
+          company_section_label: data.companySectionLabel,
+          quick_links_section_label: data.quickLinksSectionLabel,
+          contact_section_label: data.contactSectionLabel,
+          contact_email_primary: data.contactEmailPrimary,
+          contact_email_secondary: data.contactEmailSecondary,
+          help_text: data.helpText,
+          gifting_text: data.giftingText,
+          copyright_text: data.copyrightText,
+          bottom_tagline: data.bottomTagline,
+          company_links: data.companyLinks || [],
+          quick_links: data.quickLinks || [],
+          visibility: data.visibility || {},
+        };
+        setForm({ ...form, ...mapped });
+      }
+      setLoading(false);
+    })();
   }, []);
 
-  async function loadSettings() {
-    const token = await getToken();
-    if (!token) return;
-    try {
-      const data = await getFooterSettings(token);
-      if (data) {
-        setFormData({
-          newsletterText: data.newsletterText || "",
-          newsletterPlaceholder: data.newsletterPlaceholder || "",
-          newsletterButtonText: data.newsletterButtonText || "",
-          companyLinks: data.companyLinks || [],
-          quickLinks: data.quickLinks || [],
-          contactEmailPrimary: data.contactEmailPrimary || "",
-          contactEmailSecondary: data.contactEmailSecondary || "",
-          socialLinks: data.socialLinks || [],
-          copyrightText: data.copyrightText || "",
-          bottomTagline: data.bottomTagline || "",
-        });
-      }
-    } catch (e) {
-      console.error(e);
-      showToast("Failed to load footer settings", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const token = await getToken();
-    if (!token) return;
-
+  const save = async () => {
     setSaving(true);
     try {
-      await updateFooterSettings(token, formData);
-      showToast("Footer settings updated successfully", "success");
-    } catch (e) {
-      console.error(e);
-      showToast("Failed to update footer settings", "error");
+      const token = await getToken();
+      if (!token) throw new Error("No token");
+      await updateFooterSettings(token, form);
+      showToast("Footer settings saved.", "success");
+    } catch (e: any) {
+      showToast(e.message || "Failed to save.", "error");
     } finally {
       setSaving(false);
     }
-  }
+  };
 
-  // Links List Helpers
-  function addLink(type: "company" | "quick") {
-    const listKey = type === "company" ? "companyLinks" : "quickLinks";
-    setFormData((prev) => ({
-      ...prev,
-      [listKey]: [...prev[listKey], { label: "New Link", href: "/" }],
-    }));
-  }
+  const updateLink = (listName: "company_links" | "quick_links", index: number, key: string, val: string) => {
+    const newLinks = [...form[listName]];
+    newLinks[index] = { ...newLinks[index], [key]: val };
+    setForm({ ...form, [listName]: newLinks });
+  };
 
-  function removeLink(type: "company" | "quick", index: number) {
-    const listKey = type === "company" ? "companyLinks" : "quickLinks";
-    setFormData((prev) => ({
-      ...prev,
-      [listKey]: prev[listKey].filter((_, i) => i !== index),
-    }));
-  }
+  const removeLink = (listName: "company_links" | "quick_links", index: number) => {
+    const newLinks = [...form[listName]];
+    newLinks.splice(index, 1);
+    setForm({ ...form, [listName]: newLinks });
+  };
 
-  function handleLinkChange(type: "company" | "quick", index: number, field: "label" | "href", value: string) {
-    const listKey = type === "company" ? "companyLinks" : "quickLinks";
-    setFormData((prev) => {
-      const newList = [...prev[listKey]];
-      newList[index] = { ...newList[index], [field]: value };
-      return { ...prev, [listKey]: newList };
-    });
-  }
+  const addLink = (listName: "company_links" | "quick_links") => {
+    const newLinks = [...form[listName]];
+    newLinks.push({ label: "New Link", href: "/" });
+    setForm({ ...form, [listName]: newLinks });
+  };
 
-  // Social Links Helpers
-  function addSocialLink() {
-    setFormData((prev) => ({
-      ...prev,
-      socialLinks: [...prev.socialLinks, { platform: "Instagram", href: "https://", icon: "instagram" }],
-    }));
-  }
-
-  function removeSocialLink(index: number) {
-    setFormData((prev) => ({
-      ...prev,
-      socialLinks: prev.socialLinks.filter((_, i) => i !== index),
-    }));
-  }
-
-  function handleSocialChange(index: number, field: keyof SocialLinkItem, value: string) {
-    setFormData((prev) => {
-      const newList = [...prev.socialLinks];
-      newList[index] = { ...newList[index], [field]: value };
-      return { ...prev, socialLinks: newList };
-    });
-  }
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-pulse">
-        <div className="h-8 w-48 rounded-lg bg-white/[0.04]" />
-        <div className="h-64 rounded-2xl bg-white/[0.02]" />
-        <div className="h-64 rounded-2xl bg-white/[0.02]" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-serif">Footer Content</h1>
+            <p className="text-gray-500 mt-1">Manage global footer settings.</p>
+          </div>
+        </div>
+        <div className="animate-pulse h-64 bg-white/5 rounded-2xl" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* Header */}
-      <div className="flex items-end justify-between">
+    <div className="space-y-6 pb-20 relative">
+      <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] text-[#d4a853] font-medium mb-2">Structure</p>
-          <h1 className="text-3xl font-serif text-white">Footer Editor</h1>
-          <p className="text-sm text-gray-500 mt-1">Configure company links, legal terms, and copyright settings.</p>
+          <h1 className="text-3xl font-serif">Footer Content</h1>
+          <p className="text-gray-500 mt-1">Manage global footer settings.</p>
         </div>
+        <SaveBtn saving={saving} onClick={save} />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Newsletter Section */}
-        <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-6 space-y-4">
-          <div className="flex items-center gap-2 border-b border-white/[0.04] pb-3 mb-2">
-            <Globe size={16} className="text-[#d4a853]" />
-            <h2 className="text-sm font-medium text-white uppercase tracking-wider">Newsletter Settings</h2>
-          </div>
+      <SectionCard title="Newsletter Section">
+        <VisibilityField
+          label="Eyebrow"
+          visible={form.visibility?.newsletter_eyebrow ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, newsletter_eyebrow: v } })}
+        >
+          <Input value={form.newsletter_eyebrow ?? ""} onChange={(e) => setForm({ ...form, newsletter_eyebrow: e.target.value })} />
+        </VisibilityField>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-[10px] uppercase tracking-[0.15em] text-gray-500 mb-1.5">Newsletter Prompt Text</label>
-              <input
-                type="text"
-                value={formData.newsletterText}
-                onChange={(e) => setFormData({ ...formData, newsletterText: e.target.value })}
-                className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.15em] text-gray-500 mb-1.5">Email Placeholder</label>
-              <input
-                type="text"
-                value={formData.newsletterPlaceholder}
-                onChange={(e) => setFormData({ ...formData, newsletterPlaceholder: e.target.value })}
-                className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.15em] text-gray-500 mb-1.5">Subscribe Button Text</label>
-              <input
-                type="text"
-                value={formData.newsletterButtonText}
-                onChange={(e) => setFormData({ ...formData, newsletterButtonText: e.target.value })}
-                className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              />
-            </div>
-          </div>
-        </div>
+        <VisibilityField
+          label="Title"
+          visible={form.visibility?.newsletter_title ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, newsletter_title: v } })}
+        >
+          <Input value={form.newsletter_title ?? ""} onChange={(e) => setForm({ ...form, newsletter_title: e.target.value })} />
+        </VisibilityField>
+        
+        <VisibilityField
+          label="Description Text"
+          visible={form.visibility?.newsletter_text ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, newsletter_text: v } })}
+        >
+          <Textarea value={form.newsletter_text ?? ""} onChange={(e) => setForm({ ...form, newsletter_text: e.target.value })} />
+        </VisibilityField>
 
-        {/* Links Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Company Links */}
-          <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/[0.04] pb-3 mb-2">
-              <h2 className="text-sm font-medium text-white uppercase tracking-wider">Company Links</h2>
-              <button
-                type="button"
-                onClick={() => addLink("company")}
-                className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#d4a853] hover:text-[#e8c97a] transition font-medium"
-              >
-                <Plus size={12} /> Add
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {formData.companyLinks.map((link, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    value={link.label}
-                    placeholder="Label"
-                    onChange={(e) => handleLinkChange("company", idx, "label", e.target.value)}
-                    className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-                  />
-                  <input
-                    type="text"
-                    value={link.href}
-                    placeholder="Path (e.g. /about)"
-                    onChange={(e) => handleLinkChange("company", idx, "href", e.target.value)}
-                    className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#d4a853]/30 transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeLink("company", idx)}
-                    className="p-2 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-500/[0.06] transition"
-                  >
-                    <Trash size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/[0.04] pb-3 mb-2">
-              <h2 className="text-sm font-medium text-white uppercase tracking-wider">Quick Links</h2>
-              <button
-                type="button"
-                onClick={() => addLink("quick")}
-                className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#d4a853] hover:text-[#e8c97a] transition font-medium"
-              >
-                <Plus size={12} /> Add
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {formData.quickLinks.map((link, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    value={link.label}
-                    placeholder="Label"
-                    onChange={(e) => handleLinkChange("quick", idx, "label", e.target.value)}
-                    className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-                  />
-                  <input
-                    type="text"
-                    value={link.href}
-                    placeholder="Path (e.g. /faqs)"
-                    onChange={(e) => handleLinkChange("quick", idx, "href", e.target.value)}
-                    className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#d4a853]/30 transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeLink("quick", idx)}
-                    className="p-2 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-500/[0.06] transition"
-                  >
-                    <Trash size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Social Links & Emails */}
-        <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-white/[0.04] pb-3 mb-2">
-            <div className="flex items-center gap-2">
-              <Shield size={16} className="text-[#d4a853]" />
-              <h2 className="text-sm font-medium text-white uppercase tracking-wider">Social Links & Contact</h2>
-            </div>
-            <button
-              type="button"
-              onClick={addSocialLink}
-              className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-[#d4a853] hover:text-[#e8c97a] transition font-medium"
-            >
-              <Plus size={12} /> Add Social
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Emails */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] uppercase tracking-[0.15em] text-gray-500 mb-1.5">Primary Contact Email</label>
-                <input
-                  type="email"
-                  value={formData.contactEmailPrimary}
-                  onChange={(e) => setFormData({ ...formData, contactEmailPrimary: e.target.value })}
-                  className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] uppercase tracking-[0.15em] text-gray-500 mb-1.5">Secondary/Support Email</label>
-                <input
-                  type="email"
-                  value={formData.contactEmailSecondary}
-                  onChange={(e) => setFormData({ ...formData, contactEmailSecondary: e.target.value })}
-                  className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-                />
-              </div>
-            </div>
-
-            {/* Social Links List */}
-            <div className="space-y-3">
-              <label className="block text-[10px] uppercase tracking-[0.15em] text-gray-500">Active Platforms</label>
-              {formData.socialLinks.map((social, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    value={social.platform}
-                    placeholder="Platform (e.g. Instagram)"
-                    onChange={(e) => handleSocialChange(idx, "platform", e.target.value)}
-                    className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-                  />
-                  <input
-                    type="text"
-                    value={social.href}
-                    placeholder="URL"
-                    onChange={(e) => handleSocialChange(idx, "href", e.target.value)}
-                    className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#d4a853]/30 transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeSocialLink(idx)}
-                    className="p-2 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-500/[0.06] transition"
-                  >
-                    <Trash size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Banner & Taglines */}
-        <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-6 space-y-4">
-          <div className="flex items-center gap-2 border-b border-white/[0.04] pb-3 mb-2">
-            <Shield size={16} className="text-[#d4a853]" />
-            <h2 className="text-sm font-medium text-white uppercase tracking-wider">Bottom Banner & Copyright</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.15em] text-gray-500 mb-1.5">Copyright Text</label>
-              <input
-                type="text"
-                value={formData.copyrightText}
-                onChange={(e) => setFormData({ ...formData, copyrightText: e.target.value })}
-                className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase tracking-[0.15em] text-gray-500 mb-1.5">Footer Brand Tagline</label>
-              <input
-                type="text"
-                value={formData.bottomTagline}
-                onChange={(e) => setFormData({ ...formData, bottomTagline: e.target.value })}
-                className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-end pt-4">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#d4a853] to-[#e8c97a] text-black text-xs uppercase tracking-widest font-medium rounded-xl hover:shadow-lg hover:shadow-[#d4a853]/10 transition disabled:opacity-50"
+        <div className="grid grid-cols-2 gap-4">
+          <VisibilityField
+            label="Input Placeholder"
+            visible={form.visibility?.newsletter_placeholder ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, newsletter_placeholder: v } })}
           >
-            {saving ? (
-              <>
-                <RefreshCw size={14} className="animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save size={14} />
-                Save Changes
-              </>
-            )}
-          </motion.button>
-        </div>
-      </form>
+            <Input value={form.newsletter_placeholder ?? ""} onChange={(e) => setForm({ ...form, newsletter_placeholder: e.target.value })} />
+          </VisibilityField>
 
-      {/* Toast */}
-      <DashboardToast {...toast} onClose={hideToast} />
+          <VisibilityField
+            label="Button Text"
+            visible={form.visibility?.newsletter_button_text ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, newsletter_button_text: v } })}
+          >
+            <Input value={form.newsletter_button_text ?? ""} onChange={(e) => setForm({ ...form, newsletter_button_text: e.target.value })} />
+          </VisibilityField>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Section Labels">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <VisibilityField
+            label="Company Links Label"
+            visible={form.visibility?.company_section_label ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, company_section_label: v } })}
+          >
+            <Input value={form.company_section_label ?? ""} onChange={(e) => setForm({ ...form, company_section_label: e.target.value })} />
+          </VisibilityField>
+
+          <VisibilityField
+            label="Quick Links Label"
+            visible={form.visibility?.quick_links_section_label ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, quick_links_section_label: v } })}
+          >
+            <Input value={form.quick_links_section_label ?? ""} onChange={(e) => setForm({ ...form, quick_links_section_label: e.target.value })} />
+          </VisibilityField>
+
+          <VisibilityField
+            label="Contact Label"
+            visible={form.visibility?.contact_section_label ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, contact_section_label: v } })}
+          >
+            <Input value={form.contact_section_label ?? ""} onChange={(e) => setForm({ ...form, contact_section_label: e.target.value })} />
+          </VisibilityField>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Link Lists">
+        <div className="grid grid-cols-2 gap-8">
+          <div>
+            <h4 className="text-sm font-medium text-white mb-4">Company Links</h4>
+            <div className="space-y-3">
+              {form.company_links.map((link: any, i: number) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Input value={link.label} onChange={(e) => updateLink("company_links", i, "label", e.target.value)} placeholder="Label" />
+                  <Input value={link.href} onChange={(e) => updateLink("company_links", i, "href", e.target.value)} placeholder="/link" />
+                  <button onClick={() => removeLink("company_links", i)} className="text-rose-500 hover:text-rose-400 p-2"><Trash2 size={16} /></button>
+                </div>
+              ))}
+              <button onClick={() => addLink("company_links")} className="text-xs text-[#d4a853] hover:text-[#e8c97a] flex items-center gap-1 mt-2">
+                <Plus size={12} /> Add Link
+              </button>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-white mb-4">Quick Links</h4>
+            <div className="space-y-3">
+              {form.quick_links.map((link: any, i: number) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Input value={link.label} onChange={(e) => updateLink("quick_links", i, "label", e.target.value)} placeholder="Label" />
+                  <Input value={link.href} onChange={(e) => updateLink("quick_links", i, "href", e.target.value)} placeholder="/link" />
+                  <button onClick={() => removeLink("quick_links", i)} className="text-rose-500 hover:text-rose-400 p-2"><Trash2 size={16} /></button>
+                </div>
+              ))}
+              <button onClick={() => addLink("quick_links")} className="text-xs text-[#d4a853] hover:text-[#e8c97a] flex items-center gap-1 mt-2">
+                <Plus size={12} /> Add Link
+              </button>
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Contact Information">
+        <div className="grid grid-cols-2 gap-4">
+          <VisibilityField
+            label="Primary Email"
+            visible={form.visibility?.contact_email_primary ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, contact_email_primary: v } })}
+          >
+            <Input value={form.contact_email_primary ?? ""} onChange={(e) => setForm({ ...form, contact_email_primary: e.target.value })} placeholder="Usually defaults to Site Settings email" />
+          </VisibilityField>
+
+          <VisibilityField
+            label="Secondary Email (Optional)"
+            visible={form.visibility?.contact_email_secondary ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, contact_email_secondary: v } })}
+          >
+            <Input value={form.contact_email_secondary ?? ""} onChange={(e) => setForm({ ...form, contact_email_secondary: e.target.value })} />
+          </VisibilityField>
+        </div>
+        
+        <VisibilityField
+          label="Help Text"
+          visible={form.visibility?.help_text ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, help_text: v } })}
+        >
+          <Input value={form.help_text ?? ""} onChange={(e) => setForm({ ...form, help_text: e.target.value })} />
+        </VisibilityField>
+        
+        <VisibilityField
+          label="Gifting Text"
+          visible={form.visibility?.gifting_text ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, gifting_text: v } })}
+        >
+          <Input value={form.gifting_text ?? ""} onChange={(e) => setForm({ ...form, gifting_text: e.target.value })} />
+        </VisibilityField>
+      </SectionCard>
+      
+      <SectionCard title="Footer Bottom">
+        <VisibilityField
+          label="Copyright Text"
+          visible={form.visibility?.copyright_text ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, copyright_text: v } })}
+        >
+          <Input value={form.copyright_text ?? ""} onChange={(e) => setForm({ ...form, copyright_text: e.target.value })} />
+        </VisibilityField>
+
+        <VisibilityField
+          label="Bottom Tagline (Right side)"
+          visible={form.visibility?.bottom_tagline ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, bottom_tagline: v } })}
+        >
+          <Input value={form.bottom_tagline ?? ""} onChange={(e) => setForm({ ...form, bottom_tagline: e.target.value })} />
+        </VisibilityField>
+      </SectionCard>
+
+      {toast && <ToastFromHook toast={toast} onClose={hideToast} />}
     </div>
   );
 }
-
-
