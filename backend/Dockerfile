@@ -39,7 +39,7 @@ COPY --from=deps /install/deps /usr/local
 COPY --chown=bodhiq:bodhiq . .
 
 # Create uploads directory with correct ownership
-RUN mkdir -p /app/uploads && chown bodhiq:bodhiq /app/uploads
+RUN mkdir -p /app/uploads && chown -R bodhiq:bodhiq /app
 
 # Switch to non-root user
 USER bodhiq
