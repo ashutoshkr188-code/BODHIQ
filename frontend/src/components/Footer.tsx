@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Instagram, Mail, Youtube, Facebook } from "lucide-react";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import BackToTop from "@/components/ui/BackToTop";
 
 interface FooterLink {
@@ -52,6 +53,9 @@ const getIcon = (platform: string) => {
 };
 
 export default function Footer({ data, settings }: { data?: FooterData; settings?: FooterSiteSettings }) {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/dashboard")) return null;
+
   const v = data?.visibility ?? {};
   const newsletterEyebrow = v.newsletter_eyebrow !== false ? (data?.newsletterEyebrow ?? null) : null;
   const newsletterTitle = v.newsletter_title !== false ? (data?.newsletterTitle ?? null) : null;

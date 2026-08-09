@@ -62,6 +62,8 @@ export default function Navbar({ settings }: { settings?: NavSettings }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
 
+  if (pathname?.startsWith("/dashboard")) return null;
+
   useEffect(() => {
     setMounted(true);
   }, []);
