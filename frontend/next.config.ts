@@ -78,6 +78,14 @@ const nextConfig: NextConfig = {
         hostname: "*.bodhiq.in",
       },
       {
+        protocol: "https",
+        hostname: "bodhiqwatch.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.bodhiqwatch.com",
+      },
+      {
         // AWS EC2 / ECS public URL
         protocol: "https",
         hostname: "api.bodhiq.in",
