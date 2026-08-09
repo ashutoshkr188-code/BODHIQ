@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { resolveMediaUrl } from "@/lib/apiClient";
 
 type Product = {
-  id: string;
+  _id: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -17,7 +17,7 @@ type Product = {
 };
 
 type CategoryData = {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   slug: string;
@@ -178,7 +178,7 @@ export default function CategoryPageClient({
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {categoryData.products.map((item, index) => (
             <motion.div
-              key={item.id}
+              key={item._id}
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

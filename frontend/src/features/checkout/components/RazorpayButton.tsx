@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
 import { useUser } from "@clerk/nextjs";
 import { useCartStore, CartItem } from "@/hooks/cartStore";
 import { useAddressStore } from "@/hooks/addressStore";
@@ -17,12 +16,29 @@ declare global {
   }
 }
 
+async function loadRazorpayScript() {
+  if (
+    document.querySelector(
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+    )
+  ) {
+    return true;
+  }
+
+  return new Promise<boolean>((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export default function RazorpayButton() {
   const router = useRouter();
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
 
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
@@ -31,13 +47,13 @@ export default function RazorpayButton() {
   const selectedAddressId = useAddressStore((state) => state.selectedAddressId);
 
   const selectedAddress =
-    addresses.find((address) => address.id === selectedAddressId) ||
+    addresses.find((address) => address._id === selectedAddressId) ||
     addresses.find((address) => address.isDefault) ||
     addresses[0] ||
     null;
 
   const formattedCartItems = items.map((item: CartItem) => ({
-    product_id: item.id,
+    product_id: item._id,
     name: item.name,
     quantity: item.quantity,
     price: item.price,
@@ -67,13 +83,15 @@ export default function RazorpayButton() {
     setLoading(true);
     setError(null);
 
-    if (!isRazorpayLoaded || !window.Razorpay) {
-      setError("Payment service failed to load. Please try again or refresh.");
+    const res = await loadRazorpayScript();
+
+    if (!res) {
+      setError("Payment service failed to load. Please try again.");
       setLoading(false);
       return;
     }
 
-    const data = await createRazorpayOrder(formattedCartItems);
+    const data = await createRazorpayOrder(totalAmount);
 
     if (!data.success) {
       setError("Failed to create order. Please try again.");
@@ -139,11 +157,6 @@ export default function RazorpayButton() {
 
   return (
     <div className="space-y-4">
-      <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="lazyOnload"
-        onReady={() => setIsRazorpayLoaded(true)}
-      />
       <button
         onClick={handlePayment}
         disabled={loading}

@@ -11,7 +11,7 @@ import { Shield, Truck, RotateCcw, CheckCircle } from "lucide-react";
 import { resolveMediaUrl } from "@/lib/apiClient";
 
 type Product = {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   price: number;
@@ -110,7 +110,7 @@ export default function ProductPageClient({ product }: { product: Product }) {
     try {
       setLoadingNotify(true);
 
-      const data = await notifyMe(email, product.id);
+      const data = await notifyMe(email, product._id);
 
       if (!data.success) {
         throw new Error(data?.error || "Something went wrong.");
@@ -128,7 +128,7 @@ export default function ProductPageClient({ product }: { product: Product }) {
 
   const handleAddToCart = () => {
     addItem({
-      id: product.id,
+      _id: product._id,
       name: product.name,
       price: product.price,
       image: product.mainImage || undefined,

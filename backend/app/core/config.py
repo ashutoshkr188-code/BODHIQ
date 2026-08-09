@@ -15,10 +15,6 @@ class Settings(BaseSettings):
     CLERK_SECRET_KEY: str = ""
     CLERK_PUBLISHABLE_KEY: str = ""
     CLERK_JWKS_URL: str = ""
-    # The issuer URL from your Clerk dashboard (e.g. https://your-app.clerk.accounts.dev)
-    # Used to verify the `iss` claim in JWTs (AUD-01 / AUD-02)
-    CLERK_ISSUER_URL: str = ""
-
 
     # CORS & Frontend
     CORS_ORIGINS: str = "http://localhost:3000"

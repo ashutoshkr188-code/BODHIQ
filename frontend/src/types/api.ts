@@ -30,6 +30,7 @@ export interface UserProfile {
 
 export interface CategoryProduct {
   id: string;
+  _id?: string;
   name: string;
   slug: string;
   price: number;
@@ -41,13 +42,14 @@ export interface CategoryProduct {
 
 export interface Category {
   id: string;
+  _id?: string;
   title: string;
   slug: string;
   description: string | null;
-  feature_title: string | null;
+  featureTitle: string | null;
   reverse: boolean;
-  feature_image_url: string | null;
-  feature_video_url: string | null;
+  featureImage: string | null;
+  featureVideo: string | null;
   products: CategoryProduct[];
 }
 
@@ -55,6 +57,7 @@ export interface Category {
 
 export interface Product {
   id: string;
+  _id?: string;
   name: string;
   slug: string;
   description: string | null;
@@ -85,6 +88,7 @@ export interface Product {
 
 export interface ProductListItem {
   id: string;
+  _id?: string;
   name: string;
   slug: string;
   price: number;
@@ -114,6 +118,7 @@ export interface ShippingAddress {
 
 export interface Order {
   id: string;
+  _id?: string;
   order_number: string;
   razorpay_order_id: string | null;
   razorpay_payment_id: string | null;
@@ -131,6 +136,7 @@ export interface Order {
 
 export interface Address {
   id: string;
+  _id?: string;
   user_id: string;
   full_name: string;
   phone: string;
@@ -241,7 +247,6 @@ export interface ApiError {
 export interface CreateOrderPayload {
   razorpay_order_id: string;
   razorpay_payment_id: string;
-  razorpay_signature: string;   // added for server-side verification (AUD-07)
   customer_name: string;
   customer_email: string;
   amount: number;
@@ -249,7 +254,6 @@ export interface CreateOrderPayload {
   cart_items: CartItem[];
   shipping_address: ShippingAddress;
 }
-
 
 export interface CreateAddressPayload {
   full_name: string;

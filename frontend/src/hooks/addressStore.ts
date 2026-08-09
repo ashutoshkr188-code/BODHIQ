@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export type Address = {
-  id: string;
+  _id: string;
   fullName: string;
   phone: string;
   street: string;
@@ -17,7 +17,7 @@ type AddressStore = {
   addresses: Address[];
   selectedAddressId: string | null;
 
-  addAddress: (address: Omit<Address, "id">) => void;
+  addAddress: (address: Omit<Address, "_id">) => void;
   removeAddress: (id: string) => void;
   setDefaultAddress: (id: string) => void;
 
@@ -34,25 +34,25 @@ export const useAddressStore = create<AddressStore>()(
         set((state) => {
           const newAddress: Address = {
             ...address,
-            id: crypto.randomUUID(),
+            _id: crypto.randomUUID(),
           };
 
           return {
             addresses: [newAddress, ...state.addresses],
-            selectedAddressId: newAddress.id,
+            selectedAddressId: newAddress._id,
           };
         }),
 
       removeAddress: (id) =>
         set((state) => ({
-          addresses: state.addresses.filter((a) => a.id !== id),
+          addresses: state.addresses.filter((a) => a._id !== id),
         })),
 
       setDefaultAddress: (id) =>
         set((state) => ({
           addresses: state.addresses.map((a) => ({
             ...a,
-            isDefault: a.id === id,
+            isDefault: a._id === id,
           })),
         })),
 

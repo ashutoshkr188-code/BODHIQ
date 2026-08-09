@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Header from "@/components/Header";
 
+export const dynamic = "force-dynamic";
 import type { HeaderData } from "@/components/Header";
 import PhilosophySection from "@/components/PhilosophySection";
 import type { PhilosophyData } from "@/components/PhilosophySection";
@@ -42,10 +43,10 @@ export const metadata: Metadata = {
 export default async function Home() {
   // Fetch CMS content from FastAPI endpoints
   const [headerRes, homepageRes, philosophyRes, promoRes] = await Promise.allSettled([
-    serverFetch<any>("/content/header"),
-    serverFetch<any>("/content/homepage"),
-    serverFetch<any>("/content/philosophy"),
-    serverFetch<any>("/content/promo"),
+    serverFetch<any>("/content/header", { cache: "no-store" }),
+    serverFetch<any>("/content/homepage", { cache: "no-store" }),
+    serverFetch<any>("/content/philosophy", { cache: "no-store" }),
+    serverFetch<any>("/content/promo", { cache: "no-store" }),
   ]);
 
   const headerContent = headerRes.status === "fulfilled" ? headerRes.value : null;

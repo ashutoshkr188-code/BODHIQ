@@ -3,7 +3,6 @@ FastAPI dependency injection functions.
 Provides database sessions and authenticated user extraction.
 """
 
-from enum import Enum
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -11,13 +10,6 @@ from sqlalchemy.orm import Session
 from app.core.security import verify_clerk_token, ClerkUser
 from app.db.session import SessionLocal
 from app.models.user import User
-
-
-class UserRole(str, Enum):
-    """Type-safe role constants — avoids magic strings (AUD-03)."""
-    USER = "user"
-    ADMIN = "admin"
-
 
 security_scheme = HTTPBearer(auto_error=False)
 

@@ -1,10 +1,9 @@
 """Order API routes — user orders + admin management."""
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db, get_current_user, get_admin_user
-from app.main import limiter
 from app.models.user import User
 from app.schemas.order import OrderCreate, OrderStatusUpdate, OrderResponse
 from app.services.order_service import order_service
@@ -32,9 +31,7 @@ def get_order(
 
 
 @router.post("", response_model=OrderResponse, status_code=201)
-@limiter.limit("10/minute")  # AUD-05: backend-level rate limit (defence-in-depth)
 def create_order(
-    request: Request,   # required by slowapi
     payload: OrderCreate,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),

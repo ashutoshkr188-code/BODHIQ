@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useAuth } from "@clerk/nextjs";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   getContentHeader,
   updateContentHeader,
@@ -315,7 +314,6 @@ export default function ContentPage() {
               value={homepageData.hero_title}
               onChange={(e) => setHomepageData({ ...homepageData, hero_title: e.target.value })}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              placeholder="BODHIQ SHUNYA I"
             />
           </div>
           <div>
@@ -325,7 +323,6 @@ export default function ContentPage() {
               value={homepageData.hero_subtitle}
               onChange={(e) => setHomepageData({ ...homepageData, hero_subtitle: e.target.value })}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              placeholder="Imperfect. Almost."
             />
           </div>
           <div className="md:col-span-2">
@@ -335,7 +332,6 @@ export default function ContentPage() {
               onChange={(e) => setHomepageData({ ...homepageData, hero_description: e.target.value })}
               rows={3}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition resize-none"
-              placeholder="Enter hero description narrative..."
             />
           </div>
           <div className="md:col-span-2">
@@ -345,7 +341,6 @@ export default function ContentPage() {
               value={homepageData.hero_cta}
               onChange={(e) => setHomepageData({ ...homepageData, hero_cta: e.target.value })}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              placeholder="Discover the Watch"
             />
           </div>
         </div>
@@ -375,7 +370,7 @@ export default function ContentPage() {
                     media.type === "video" ? (
                       <Play size={14} className="text-[#d4a853]" />
                     ) : (
-                      <Image src={resolveMediaUrl(media.url)} alt="" fill className="object-cover" />
+                      <img src={resolveMediaUrl(media.url)} alt="" className="w-full h-full object-cover" />
                     )
                   ) : (
                     <ImageIcon size={16} className="text-gray-700" />
@@ -396,7 +391,6 @@ export default function ContentPage() {
                 <input
                   type="text"
                   value={media.url || ""}
-                  placeholder="Absolute media URL or path (e.g., /uploads/...)"
                   onChange={(e) => handleMediaChange(idx, "url", e.target.value)}
                   className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#d4a853]/30 transition"
                 />
@@ -467,7 +461,6 @@ export default function ContentPage() {
               value={philosophyData.title}
               onChange={(e) => setPhilosophyData({ ...philosophyData, title: e.target.value })}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              placeholder="The Philosophy"
             />
           </div>
           <div className="md:col-span-2">
@@ -477,7 +470,6 @@ export default function ContentPage() {
               onChange={(e) => setPhilosophyData({ ...philosophyData, description: e.target.value })}
               rows={4}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition resize-none"
-              placeholder="In a world obsessed with perfection..."
             />
           </div>
           
@@ -488,7 +480,7 @@ export default function ContentPage() {
               <div className="w-20 h-20 rounded-2xl bg-white/[0.02] border border-white/[0.06] overflow-hidden flex items-center justify-center shrink-0 relative group">
                 {philosophyData.image_url ? (
                   <>
-                    <Image src={resolveMediaUrl(philosophyData.image_url)} alt="" fill className="object-cover" />
+                    <img src={resolveMediaUrl(philosophyData.image_url)} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"
                       onClick={() => setPhilosophyData((prev) => ({ ...prev, image_url: null }))}
@@ -507,7 +499,6 @@ export default function ContentPage() {
                     type="text"
                     value={philosophyData.image_url || ""}
                     onChange={(e) => setPhilosophyData({ ...philosophyData, image_url: e.target.value || null })}
-                    placeholder="Image URL or upload..."
                     className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-gray-700 focus:outline-none focus:border-[#d4a853]/30 transition"
                   />
                   <label className="flex items-center justify-center px-4 rounded-xl bg-[#d4a853]/10 border border-[#d4a853]/20 hover:bg-[#d4a853]/20 text-[#d4a853] text-[10px] uppercase tracking-wider cursor-pointer font-medium transition shrink-0">
@@ -562,7 +553,6 @@ export default function ContentPage() {
               value={promoData.title}
               onChange={(e) => setPromoData({ ...promoData, title: e.target.value })}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              placeholder="Enter banner title (e.g., The Art of Kintsugi)..."
             />
           </div>
           <div className="md:col-span-2">
@@ -572,7 +562,6 @@ export default function ContentPage() {
               onChange={(e) => setPromoData({ ...promoData, description: e.target.value })}
               rows={3}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition resize-none"
-              placeholder="Enter banner description narrative..."
             />
           </div>
 
@@ -595,7 +584,6 @@ export default function ContentPage() {
               value={promoData.button_text}
               onChange={(e) => setPromoData({ ...promoData, button_text: e.target.value })}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition"
-              placeholder="Enter button text (e.g., Explore)..."
             />
           </div>
 
@@ -606,7 +594,6 @@ export default function ContentPage() {
               value={promoData.button_link}
               onChange={(e) => setPromoData({ ...promoData, button_link: e.target.value })}
               className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4a853]/30 transition font-mono"
-              placeholder="Enter button link path (e.g., /collection)..."
             />
           </div>
           
@@ -622,7 +609,7 @@ export default function ContentPage() {
                         <Play size={20} className="text-[#d4a853] fill-[#d4a853]/20" />
                       </div>
                     ) : (
-                      <Image src={resolveMediaUrl(promoData.bg_url)} alt="" fill className="object-cover" />
+                      <img src={resolveMediaUrl(promoData.bg_url)} alt="" className="w-full h-full object-cover" />
                     )}
                     <button
                       type="button"
@@ -642,7 +629,6 @@ export default function ContentPage() {
                     type="text"
                     value={promoData.bg_url || ""}
                     onChange={(e) => setPromoData({ ...promoData, bg_url: e.target.value || null })}
-                    placeholder="Media URL or upload..."
                     className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2 text-xs text-white placeholder:text-gray-700 focus:outline-none focus:border-[#d4a853]/30 transition"
                   />
                   <label className="flex items-center justify-center px-4 rounded-xl bg-[#d4a853]/10 border border-[#d4a853]/20 hover:bg-[#d4a853]/20 text-[#d4a853] text-[10px] uppercase tracking-wider cursor-pointer font-medium transition shrink-0">
@@ -711,14 +697,12 @@ export default function ContentPage() {
                 <input
                   type="text"
                   value={link.title}
-                  placeholder="Link Title (e.g. Collection)"
                   onChange={(e) => handleNavLinkChange(idx, "title", e.target.value)}
                   className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#d4a853]/30 transition"
                 />
                 <input
                   type="text"
                   value={link.href}
-                  placeholder="Link Path (e.g. /collection)"
                   onChange={(e) => handleNavLinkChange(idx, "href", e.target.value)}
                   className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-[#d4a853]/30 transition"
                 />

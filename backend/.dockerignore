@@ -54,7 +54,3 @@ node_modules/
 dist/
 build/
 *.egg-info/
-
-# Admin local scripts (AUD-28)
-promote_user.py
-

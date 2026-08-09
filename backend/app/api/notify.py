@@ -1,10 +1,12 @@
+"""Notify-me (back in stock) API route."""
+
 import math
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.core.deps import get_db, get_current_user_optional, get_admin_user
+from app.core.deps import get_db, get_current_user, get_admin_user
 from app.models.notify import BackInStockRequest
 from app.models.user import User
 
@@ -33,10 +35,10 @@ class BackInStockResponse(BaseModel):
 @router.post("")
 def create_notify_request(
     payload: NotifyRequest,
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    user: User | None = Depends(get_current_user_optional),  # optional auth (AUD-25)
 ):
-    """Submit a back-in-stock notification request. Auth optional — email is the key."""
+    """Submit a back-in-stock notification request."""
     existing = (
         db.query(BackInStockRequest)
         .filter(
@@ -54,7 +56,7 @@ def create_notify_request(
         product_name=payload.product_name,
         product_slug=payload.product_slug,
         email=payload.email,
-        clerk_user_id=user.clerk_id if user else None,
+        clerk_user_id=user.clerk_id,
     )
     db.add(request)
     db.commit()

@@ -58,14 +58,12 @@ export async function POST(req: Request) {
     const orderPayload: CreateOrderPayload = {
       razorpay_order_id,
       razorpay_payment_id,
-      razorpay_signature,          // forwarded for backend HMAC verification (AUD-07)
       customer_name: customerName,
       customer_email: customerEmail,
       amount,
       currency: currency ?? "INR",
       cart_items: (cartItems ?? []).map(
-        (item: { product_id: string; name: string; quantity: number; price: number }) => ({
-          product_id: item.product_id,  // was missing before (AUD-17)
+        (item: { name: string; quantity: number; price: number }) => ({
           name: item.name,
           quantity: item.quantity,
           price: item.price,

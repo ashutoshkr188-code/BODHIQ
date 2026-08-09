@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -13,7 +12,7 @@ import {
   Settings,
   Sparkles,
   Users,
-  Image as ImageIcon,
+  Image,
   List,
 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
@@ -24,7 +23,7 @@ const links = [
   { name: "Orders", href: "/dashboard/orders", icon: Package },
   { name: "Content", href: "/dashboard/content", icon: FileText },
   { name: "Users", href: "/dashboard/users", icon: Users },
-  { name: "Media", href: "/dashboard/media", icon: ImageIcon },
+  { name: "Media", href: "/dashboard/media", icon: Image },
   { name: "Footer", href: "/dashboard/footer", icon: List },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
@@ -96,7 +95,7 @@ export function AdminSidebar() {
         <div className="px-5 py-4">
           <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.02]">
             {user.imageUrl ? (
-              <Image src={user.imageUrl} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover" />
+              <img src={user.imageUrl} alt="" className="w-8 h-8 rounded-lg object-cover" />
             ) : (
               <div className="w-8 h-8 rounded-lg bg-[#d4a853]/10 flex items-center justify-center text-[#d4a853] text-xs font-semibold">
                 {user.firstName?.[0] || "A"}

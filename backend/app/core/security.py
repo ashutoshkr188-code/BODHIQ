@@ -114,24 +114,12 @@ async def verify_clerk_token(token: str) -> ClerkUser:
 
         # Verify and decode the token
         settings = get_settings()
-
-        decode_kwargs: dict = {
-            "algorithms": ["RS256"],
-            # Clerk JWTs do not include an `aud` claim by default.
-            # If you configure audiences in your Clerk dashboard, set verify_aud=True. (AUD-02)
-            "options": {"verify_aud": False},
-        }
-
-        # Verify issuer if configured (AUD-01)
-        if settings.CLERK_ISSUER_URL:
-            decode_kwargs["issuer"] = settings.CLERK_ISSUER_URL
-        else:
-            logger.warning(
-                "CLERK_ISSUER_URL not set — skipping JWT issuer verification. "
-                "Set it in .env to improve token security."
-            )
-
-        payload = jwt.decode(token, rsa_key, **decode_kwargs)
+        payload = jwt.decode(
+            token,
+            rsa_key,
+            algorithms=["RS256"],
+            options={"verify_aud": False},  # Clerk tokens don't include audience claim
+        )
 
         clerk_id = payload.get("sub")
         if not clerk_id:

@@ -58,10 +58,6 @@ def admin_update_role(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Prevent admin from self-demoting (AUD-04)
-    if user.id == admin.id and payload.role != "admin":
-        raise HTTPException(status_code=400, detail="Cannot demote your own admin account")
-
     user.role = payload.role
     db.commit()
     db.refresh(user)

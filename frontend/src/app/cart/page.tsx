@@ -69,7 +69,7 @@ export default function CartPage() {
               <AnimatePresence mode="popLayout">
                 {items.map((item, i) => (
                   <motion.div
-                    key={item.id}
+                    key={item._id}
                     layout
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -99,7 +99,7 @@ export default function CartPage() {
                       {/* Quantity Controls */}
                       <div className="flex items-center gap-0 mt-3">
                         <button
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => removeItem(item._id)}
                           className="w-8 h-8 rounded-l-lg border border-white/10 bg-white/[0.03] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/[0.06] transition"
                           aria-label="Decrease quantity"
                         >
@@ -111,7 +111,7 @@ export default function CartPage() {
                         <button
                           onClick={() =>
                             addItem({
-                              id: item.id,
+                              _id: item._id,
                               name: item.name,
                               price: item.price,
                               image: item.image,
@@ -134,7 +134,7 @@ export default function CartPage() {
                       <button
                         onClick={() => {
                           for (let q = 0; q < item.quantity; q++) {
-                            removeItem(item.id);
+                            removeItem(item._id);
                           }
                         }}
                         className="text-gray-600 hover:text-red-400 transition-colors mt-2 p-1 opacity-0 group-hover:opacity-100"

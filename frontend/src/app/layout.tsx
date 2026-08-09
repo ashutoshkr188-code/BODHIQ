@@ -23,7 +23,7 @@ const inter = Inter({
 });
 
 const getCachedSettings = cache(async () => {
-  return serverFetch<SiteSettings>("/settings");
+  return serverFetch<SiteSettings>("/settings", { cache: "no-store" });
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -110,7 +110,7 @@ export default async function RootLayout({
   try {
     const [settingsRes, footerRes] = await Promise.all([
       getCachedSettings(),
-      serverFetch<FooterSettings>("/footer"),
+      serverFetch<FooterSettings>("/footer", { cache: "no-store" }),
     ]);
     settings = settingsRes;
     footerData = footerRes;
@@ -123,7 +123,6 @@ export default async function RootLayout({
       <html
         lang="en"
         className={`${cormorant.variable} ${inter.variable} h-full antialiased`}
-        data-scroll-behavior="smooth"
       >
         <head>
           <script
@@ -145,7 +144,7 @@ export default async function RootLayout({
                   email: settings?.contactEmail || "bodhiq.official@gmail.com",
                   contactType: "customer service",
                 },
-              }).replace(/</g, "\\u003c"),
+              }),
             }}
           />
         </head>

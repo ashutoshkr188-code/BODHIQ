@@ -53,7 +53,7 @@ export default async function ProductPage({
   // Adapt FastAPI product shape → shape expected by ProductPageClient
   // FastAPI uses snake_case; map to camelCase for the client component
   const adaptedProduct = {
-    id: product.id,
+    _id: product.id,
     name: product.name,
     description: product.description || "",
     price: product.price,
@@ -117,11 +117,11 @@ export default async function ProductPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <ProductPageClient product={adaptedProduct} />
     </>

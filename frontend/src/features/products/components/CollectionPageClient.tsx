@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { resolveMediaUrl } from "@/lib/apiClient";
 
 type Product = {
-  id: string;
+  _id: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -17,7 +17,7 @@ type Product = {
 };
 
 type Category = {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   slug: string;
@@ -213,7 +213,7 @@ function CollectionSection({
         <div className={`grid grid-cols-1 sm:grid-cols-2 gap-6 ${(featureImage || featureVideo) ? "lg:col-span-2" : "lg:col-span-4 lg:grid-cols-4"}`}>
           {products.map((product) => (
             <ProductCard
-              key={product.id}
+              key={product._id}
               name={product.name}
               price={product.price}
               originalPrice={product.originalPrice}
@@ -264,7 +264,7 @@ export default function CollectionPageClient({
 
         {/* Categories / Products */}
         {categories.map((category) => (
-          <CollectionSection key={category.id} category={category} />
+          <CollectionSection key={category._id} category={category} />
         ))}
       </div>
     </main>

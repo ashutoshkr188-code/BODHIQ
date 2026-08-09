@@ -10,8 +10,6 @@
  *   const res = await routeFetch("/orders", token, { method: "POST", body: JSON.stringify(payload) });
  */
 
-import { redirect } from "next/navigation";
-
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 /**
@@ -50,13 +48,6 @@ export async function serverFetch<T = unknown>(
   const res = await fetch(url, fetchOptions);
 
   if (res.status === 404) return null;
-  if (res.status === 401) {
-    if (typeof window !== "undefined") {
-      window.location.href = "/sign-in";
-      return null;
-    }
-    redirect("/sign-in");
-  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
@@ -95,14 +86,6 @@ export async function routeFetch<T = unknown>(
     ...options,
   });
 
-  if (res.status === 401) {
-    if (typeof window !== "undefined") {
-      window.location.href = "/sign-in";
-      return {} as T;
-    }
-    redirect("/sign-in");
-  }
-
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`API ${res.status} — ${url}: ${text}`);
@@ -140,13 +123,6 @@ export async function authedServerFetch<T = unknown>(
   });
 
   if (res.status === 404) return null;
-  if (res.status === 401) {
-    if (typeof window !== "undefined") {
-      window.location.href = "/sign-in";
-      return null;
-    }
-    redirect("/sign-in");
-  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);

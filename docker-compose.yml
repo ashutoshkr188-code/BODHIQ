@@ -74,6 +74,7 @@ services:
     environment:
       # Runtime environment variables for Next.js server
       NEXTAUTH_URL: "http://localhost"
+      HOSTNAME: "0.0.0.0"
     expose:
       - "3000"
     healthcheck:

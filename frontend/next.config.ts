@@ -33,16 +33,14 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value:
       "default-src 'self'; " +
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https:; " +
-      "worker-src 'self' blob:; " +
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https:; " +
       "style-src 'self' 'unsafe-inline' https:; " +
       "img-src 'self' data: blob: https: http://localhost:8000 http://127.0.0.1:8000; " +
       "media-src 'self' blob: https: http://localhost:8000 http://127.0.0.1:8000; " +
       "font-src 'self' data: https:; " +
       "connect-src 'self' wss: https: http://localhost:8000 http://127.0.0.1:8000; " +
-      "frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https:;",
+      "frame-src 'self' https:;",
   },
-
 ];
 
 const nextConfig: NextConfig = {
