@@ -23,6 +23,7 @@ NavLinkSchema.model_rebuild()
 class HeaderContentUpdate(BaseModel):
     logo_text: Optional[str] = None
     nav_links: Optional[List[NavLinkSchema]] = None
+    background_media: Optional[List[BackgroundMediaItem]] = None
     mobile_tagline: Optional[str] = None
     visibility: Optional[dict[str, bool]] = None
 
@@ -31,6 +32,7 @@ class HeaderContentUpdate(BaseModel):
 class HeaderContentResponse(BaseModel):
     logo_text: str
     nav_links: List[dict]
+    background_media: List[dict] = []
     mobile_tagline: Optional[str] = None
     visibility: dict[str, bool] = {}
 
