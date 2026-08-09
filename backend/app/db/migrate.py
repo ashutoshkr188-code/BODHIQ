@@ -69,6 +69,16 @@ def run_cms_migrations():
             add_column_if_missing("footer_settings", "help_text", "VARCHAR(500)")
             add_column_if_missing("footer_settings", "gifting_text", "VARCHAR(500)")
 
+        # Add visibility column to ALL CMS tables
+        tables_with_visibility = [
+            "cms_homepage", "cms_philosophy", "cms_promo", "cms_header",
+            "footer_settings", "site_settings", "cms_featured_collection",
+            "cms_about", "cms_craftsmanship", "cms_faq", "cms_page_content"
+        ]
+        for tbl in tables_with_visibility:
+            if tbl in existing_tables:
+                add_column_if_missing(tbl, "visibility", "JSON", "'{}'")
+
         logger.info("CMS migrations completed successfully.")
 
     except Exception as e:

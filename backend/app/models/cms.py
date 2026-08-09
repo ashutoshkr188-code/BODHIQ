@@ -16,6 +16,7 @@ class HeaderContent(Base):
     nav_links: Mapped[list] = mapped_column(JSON, default=list)
     background_media: Mapped[list] = mapped_column(JSON, default=list)
     mobile_tagline: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 # ─── Homepage Hero ────────────────────────────────────────────────────────────
@@ -34,6 +35,7 @@ class HomepageContent(Base):
     hero_cta_link: Mapped[str | None] = mapped_column(String(300), nullable=True)
     section_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     background_media: Mapped[list] = mapped_column(JSON, default=list)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 # ─── Philosophy Section ───────────────────────────────────────────────────────
@@ -51,6 +53,7 @@ class PhilosophyContent(Base):
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     signature_title: Mapped[str | None] = mapped_column(String(100), nullable=True)
     signature_subtitle: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 # ─── Promo / Feature Banner ───────────────────────────────────────────────────
@@ -67,6 +70,7 @@ class PromoContent(Base):
     bg_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     button_text: Mapped[str | None] = mapped_column(String(100), nullable=True)
     button_link: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 # ─── Featured Collection Section ──────────────────────────────────────────────
@@ -81,6 +85,7 @@ class FeaturedCollectionContent(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     cta_text: Mapped[str | None] = mapped_column(String(100), nullable=True)
     cta_link: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 # ─── About Page ───────────────────────────────────────────────────────────────
@@ -119,6 +124,7 @@ class AboutContent(Base):
     # SEO
     meta_title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     meta_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 # ─── Craftsmanship Page ───────────────────────────────────────────────────────
@@ -145,6 +151,7 @@ class CraftsmanshipContent(Base):
     # SEO
     meta_title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     meta_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 # ─── FAQ Items ────────────────────────────────────────────────────────────────
@@ -158,6 +165,7 @@ class FAQItem(Base):
     answer: Mapped[str] = mapped_column(Text, nullable=False)
     order: Mapped[int] = mapped_column(Integer, default=0)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 # ─── CMS Page Content (policy + info pages) ───────────────────────────────────
@@ -176,3 +184,4 @@ class CMSPageContent(Base):
     meta_title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     meta_description: Mapped[str | None] = mapped_column(Text, nullable=True)
     section_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)

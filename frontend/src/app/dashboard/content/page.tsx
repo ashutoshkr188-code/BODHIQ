@@ -5,6 +5,8 @@ import { useAuth } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { Save, RefreshCw, Eye, EyeOff, Video, Image, Plus, Trash2, GripVertical, Link } from "lucide-react";
 import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
+
 import {
   getContentHomepage, updateContentHomepage,
   getContentFeaturedCollection, updateContentFeaturedCollection,
@@ -14,13 +16,7 @@ import {
 
 // ─── Shared UI Helpers ────────────────────────────────────────────────────────
 
-const Field = ({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) => (
-  <div className="space-y-1.5">
-    <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider">{label}</label>
-    {children}
-    {hint && <p className="text-[11px] text-gray-600">{hint}</p>}
-  </div>
-);
+// Replaced by VisibilityField
 
 const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input
@@ -81,7 +77,9 @@ function HeroEditor() {
     badge_text: "", badge_visible: true,
     hero_title: "", hero_subtitle: "", hero_description: "", hero_cta: "", hero_cta_link: "",
     section_enabled: true, background_media: [],
+    visibility: {},
   });
+
 
   useEffect(() => {
     (async () => {
@@ -136,50 +134,67 @@ function HeroEditor() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          <Field label="Badge Text" hint="Leave blank to hide the badge">
-            <div className="flex gap-2">
-              <Input
-                value={form.badge_text ?? ""}
-                onChange={(e) => setForm({ ...form, badge_text: e.target.value })}
-                placeholder="Launch Edition — Limited First Drop"
-              />
-              <button
-                onClick={() => setForm({ ...form, badge_visible: !form.badge_visible })}
-                title={form.badge_visible ? "Hide badge" : "Show badge"}
-                className="px-3 py-2 border border-white/10 rounded-xl hover:border-[#d4a853]/40 transition text-gray-400 hover:text-[#d4a853]"
-              >
-                {form.badge_visible ? <Eye size={15} /> : <EyeOff size={15} />}
-              </button>
-            </div>
-          </Field>
-          <Field label="Badge Visibility">
-            <Toggle
-              checked={form.badge_visible}
-              onChange={(v) => setForm({ ...form, badge_visible: v })}
-              label={form.badge_visible ? "Badge visible" : "Badge hidden"}
+          <VisibilityField
+            label="Badge Text"
+            hint="Leave blank to hide the badge completely"
+            visible={form.visibility?.badge_text ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, badge_text: v } })}
+          >
+            <Input
+              value={form.badge_text ?? ""}
+              onChange={(e) => setForm({ ...form, badge_text: e.target.value })}
+              placeholder="Launch Edition — Limited First Drop"
             />
-          </Field>
+          </VisibilityField>
+          <div className="flex items-center">
+            {/* Kept empty for grid alignment or can add other fields */}
+          </div>
         </div>
 
-        <Field label="Hero Title">
+        <VisibilityField
+          label="Hero Title"
+          visible={form.visibility?.hero_title ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, hero_title: v } })}
+        >
           <Input value={form.hero_title ?? ""} onChange={(e) => setForm({ ...form, hero_title: e.target.value })} placeholder="BODHIQ SHUNYA I" />
-        </Field>
-        <Field label="Hero Tagline / Subtitle">
+        </VisibilityField>
+
+        <VisibilityField
+          label="Hero Tagline / Subtitle"
+          visible={form.visibility?.hero_subtitle ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, hero_subtitle: v } })}
+        >
           <Input value={form.hero_subtitle ?? ""} onChange={(e) => setForm({ ...form, hero_subtitle: e.target.value })} placeholder="Imperfect. Almost." />
-        </Field>
-        <Field label="Hero Description" hint="Supports line breaks">
+        </VisibilityField>
+
+        <VisibilityField
+          label="Hero Description"
+          hint="Supports line breaks"
+          visible={form.visibility?.hero_description ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, hero_description: v } })}
+        >
           <Textarea value={form.hero_description ?? ""} onChange={(e) => setForm({ ...form, hero_description: e.target.value })} placeholder="A minimalist luxury timepiece…" />
-        </Field>
+        </VisibilityField>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="CTA Button Text">
+          <VisibilityField
+            label="CTA Button Text"
+            visible={form.visibility?.hero_cta ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, hero_cta: v } })}
+          >
             <Input value={form.hero_cta ?? ""} onChange={(e) => setForm({ ...form, hero_cta: e.target.value })} placeholder="Explore" />
-          </Field>
-          <Field label="CTA Link URL">
+          </VisibilityField>
+
+          <VisibilityField
+            label="CTA Link URL"
+            visible={form.visibility?.hero_cta_link ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, hero_cta_link: v } })}
+          >
             <div className="flex items-center gap-2">
               <Link size={14} className="text-gray-600 shrink-0" />
               <Input value={form.hero_cta_link ?? ""} onChange={(e) => setForm({ ...form, hero_cta_link: e.target.value })} placeholder="/collection" />
             </div>
-          </Field>
+          </VisibilityField>
         </div>
       </SectionCard>
 
@@ -206,6 +221,23 @@ function HeroEditor() {
                 {m.type === "video" ? <Video size={14} className="text-[#d4a853] shrink-0" /> : <Image size={14} className="text-[#d4a853] shrink-0" />}
                 <span className="text-xs text-gray-400 flex-1 truncate">{m.url}</span>
                 <button
+                  onClick={() => {
+                    // Update visibility to toggle background media globally if needed, 
+                    // or just manage visibility globally for 'background_media'
+                    setForm({
+                      ...form,
+                      visibility: { ...form.visibility, background_media: !(form.visibility?.background_media ?? true) }
+                    });
+                  }}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] uppercase font-bold transition-colors mr-2 ${
+                    (form.visibility?.background_media ?? true)
+                      ? "bg-[#d4a853]/10 text-[#d4a853] hover:bg-[#d4a853]/20"
+                      : "bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                  }`}
+                >
+                  {(form.visibility?.background_media ?? true) ? <Eye size={12} /> : <EyeOff size={12} />}
+                </button>
+                <button
                   onClick={() => setForm((f: any) => ({ ...f, background_media: f.background_media.filter((_: any, j: number) => j !== i) }))}
                   className="text-red-400/60 hover:text-red-400 transition"
                 >
@@ -215,6 +247,7 @@ function HeroEditor() {
             ))}
           </div>
         )}
+
       </SectionCard>
 
       <div className="flex justify-end">
@@ -233,7 +266,8 @@ function FeaturedCollectionEditor() {
   const { toast, show: showToast, hide: hideToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<any>({ section_enabled: true, eyebrow: "", title: "", description: "", cta_text: "", cta_link: "" });
+  const [form, setForm] = useState<any>({ section_enabled: true, eyebrow: "", title: "", description: "", cta_text: "", cta_link: "", visibility: {} });
+
 
   useEffect(() => {
     (async () => {
@@ -265,12 +299,47 @@ function FeaturedCollectionEditor() {
     <div className="space-y-4">
       <SectionCard title="Featured Collection Section">
         <Toggle checked={form.section_enabled} onChange={(v) => setForm({ ...form, section_enabled: v })} label="Section Enabled" />
-        <Field label="Eyebrow Label"><Input value={form.eyebrow ?? ""} onChange={(e) => setForm({ ...form, eyebrow: e.target.value })} placeholder="The Collection" /></Field>
-        <Field label="Section Title"><Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Timeless Presence" /></Field>
-        <Field label="Description"><Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Discover our latest collection." /></Field>
+        
+        <VisibilityField
+          label="Eyebrow Label"
+          visible={form.visibility?.eyebrow ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, eyebrow: v } })}
+        >
+          <Input value={form.eyebrow ?? ""} onChange={(e) => setForm({ ...form, eyebrow: e.target.value })} placeholder="The Collection" />
+        </VisibilityField>
+
+        <VisibilityField
+          label="Section Title"
+          visible={form.visibility?.title ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, title: v } })}
+        >
+          <Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Timeless Presence" />
+        </VisibilityField>
+
+        <VisibilityField
+          label="Description"
+          visible={form.visibility?.description ?? true}
+          onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, description: v } })}
+        >
+          <Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Discover our latest collection." />
+        </VisibilityField>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="CTA Text"><Input value={form.cta_text ?? ""} onChange={(e) => setForm({ ...form, cta_text: e.target.value })} placeholder="View All" /></Field>
-          <Field label="CTA Link"><Input value={form.cta_link ?? ""} onChange={(e) => setForm({ ...form, cta_link: e.target.value })} placeholder="/collection" /></Field>
+          <VisibilityField
+            label="CTA Text"
+            visible={form.visibility?.cta_text ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, cta_text: v } })}
+          >
+            <Input value={form.cta_text ?? ""} onChange={(e) => setForm({ ...form, cta_text: e.target.value })} placeholder="View All" />
+          </VisibilityField>
+
+          <VisibilityField
+            label="CTA Link"
+            visible={form.visibility?.cta_link ?? true}
+            onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, cta_link: v } })}
+          >
+            <Input value={form.cta_link ?? ""} onChange={(e) => setForm({ ...form, cta_link: e.target.value })} placeholder="/collection" />
+          </VisibilityField>
         </div>
       </SectionCard>
       <div className="flex justify-end"><SaveBtn saving={saving} onClick={save} /></div>

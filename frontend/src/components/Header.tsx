@@ -39,21 +39,24 @@ export interface HeaderData {
   ctaText?: string | null;
   ctaLink?: string | null;
   backgroundMedia?: BackgroundMediaItem[];
+  visibility?: Record<string, boolean>;
 }
 
 export default function Header({ data }: { data?: HeaderData }) {
   // CMS is the single source of truth. No hardcoded fallbacks for editorial content.
-  const showBadge = data?.badgeVisible !== false && !!data?.badgeText;
-  const badgeText = data?.badgeText ?? null;
-  const title = data?.title ?? null;
-  const tagline = data?.tagline ?? null;
-  const description = data?.description ?? null;
-  const ctaText = data?.ctaText ?? null;
-  const ctaLink = data?.ctaLink ?? "/collection";
+  const showBadge = data?.badgeVisible !== false && !!data?.badgeText && data?.visibility?.badge_text !== false;
+  const badgeText = data?.visibility?.badge_text !== false ? (data?.badgeText ?? null) : null;
+  const title = data?.visibility?.hero_title !== false ? (data?.title ?? null) : null;
+  const tagline = data?.visibility?.hero_subtitle !== false ? (data?.tagline ?? null) : null;
+  const description = data?.visibility?.hero_description !== false ? (data?.description ?? null) : null;
+  const ctaText = data?.visibility?.hero_cta !== false ? (data?.ctaText ?? null) : null;
+  const ctaLink = data?.visibility?.hero_cta_link !== false ? (data?.ctaLink ?? "/collection") : "/collection";
+
 
   // Use CMS background media if available, fallback to local videos
-  const mediaList = data?.backgroundMedia?.length
+  const mediaList = data?.visibility?.background_media !== false && data?.backgroundMedia?.length
     ? [...data.backgroundMedia].sort((a, b) => a.order - b.order)
+
     : localVideos.map((url, i) => ({ type: "video" as const, url, order: i }));
 
   const [currentIndex, setCurrentIndex] = useState(0);

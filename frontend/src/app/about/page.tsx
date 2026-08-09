@@ -30,7 +30,9 @@ interface AboutCMS {
   cta_link: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  visibility?: Record<string, boolean>;
 }
+
 
 export async function generateMetadata(): Promise<Metadata> {
   const cms = await serverFetch<AboutCMS>("/content/about", { cache: "no-store" }).catch(() => null);
@@ -56,11 +58,22 @@ export default async function AboutPage() {
     );
   }
 
+  if (cms) {
+    const v = cms.visibility ?? {};
+    const keys = Object.keys(cms) as (keyof AboutCMS)[];
+    for (const key of keys) {
+       if (key !== 'visibility' && key !== 'section_enabled' && v[key] === false) {
+           (cms as any)[key] = null;
+       }
+    }
+  }
+
   const hasOrigin = cms?.origin_title || cms?.origin_body;
   const hasMission = cms?.mission_title || cms?.mission_body;
   const hasQuote = cms?.quote_text;
   const hasTeam = cms?.team_title || cms?.team_body;
   const hasCta = cms?.cta_title || cms?.cta_text;
+
 
   return (
     <main className="min-h-screen bg-black text-white">

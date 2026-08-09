@@ -35,7 +35,9 @@ interface FooterData {
   socialLinks?: SocialLink[];
   copyrightText?: string | null;
   bottomTagline?: string | null;
+  visibility?: Record<string, boolean>;
 }
+
 
 interface FooterSiteSettings {
   contactEmail?: string;
@@ -50,15 +52,18 @@ const getIcon = (platform: string) => {
 };
 
 export default function Footer({ data, settings }: { data?: FooterData; settings?: FooterSiteSettings }) {
-  const newsletterEyebrow = data?.newsletterEyebrow ?? null;
-  const newsletterTitle = data?.newsletterTitle ?? null;
-  const newsletterText = data?.newsletterText ?? null;
-  const newsletterPlaceholder = data?.newsletterPlaceholder ?? "Your email address";
-  const newsletterButtonText = data?.newsletterButtonText ?? "Subscribe";
+  const v = data?.visibility ?? {};
+  const newsletterEyebrow = v.newsletter_eyebrow !== false ? (data?.newsletterEyebrow ?? null) : null;
+  const newsletterTitle = v.newsletter_title !== false ? (data?.newsletterTitle ?? null) : null;
+  const newsletterText = v.newsletter_text !== false ? (data?.newsletterText ?? null) : null;
+  const newsletterPlaceholder = v.newsletter_placeholder !== false ? (data?.newsletterPlaceholder ?? "Your email address") : "Your email address";
+  const newsletterButtonText = v.newsletter_button_text !== false ? (data?.newsletterButtonText ?? "Subscribe") : "Subscribe";
 
-  const companySectionLabel = data?.companySectionLabel ?? null;
-  const quickLinksSectionLabel = data?.quickLinksSectionLabel ?? null;
-  const contactSectionLabel = data?.contactSectionLabel ?? null;
+
+  const companySectionLabel = v.company_section_label !== false ? (data?.companySectionLabel ?? null) : null;
+  const quickLinksSectionLabel = v.quick_links_section_label !== false ? (data?.quickLinksSectionLabel ?? null) : null;
+  const contactSectionLabel = v.contact_section_label !== false ? (data?.contactSectionLabel ?? null) : null;
+
 
   const companyLinks = data?.companyLinks && data.companyLinks.length > 0
     ? data.companyLinks.map((l: FooterLink) => ({ label: l.title || l.label, href: l.href }))
@@ -68,18 +73,20 @@ export default function Footer({ data, settings }: { data?: FooterData; settings
     ? data.quickLinks.map((l: FooterLink) => ({ label: l.title || l.label, href: l.href }))
     : [];
 
-  const primaryEmail = data?.contactEmailPrimary || settings?.contactEmail || null;
-  const secondaryEmail = data?.contactEmailSecondary || null;
+  const primaryEmail = v.contact_email_primary !== false ? (data?.contactEmailPrimary || settings?.contactEmail || null) : null;
+  const secondaryEmail = v.contact_email_secondary !== false ? (data?.contactEmailSecondary || null) : null;
 
-  const helpText = data?.helpText ?? null;
-  const giftingText = data?.giftingText ?? null;
+  const helpText = v.help_text !== false ? (data?.helpText ?? null) : null;
+  const giftingText = v.gifting_text !== false ? (data?.giftingText ?? null) : null;
+
 
   const socialLinks = data?.socialLinks && data.socialLinks.length > 0
     ? data.socialLinks
     : [];
 
-  const copyrightText = data?.copyrightText ?? null;
-  const bottomTagline = data?.bottomTagline ?? null;
+  const copyrightText = v.copyright_text !== false ? (data?.copyrightText ?? null) : null;
+  const bottomTagline = v.bottom_tagline !== false ? (data?.bottomTagline ?? null) : null;
+
 
   const [emailInput, setEmailInput] = useState("");
   const [subscribed, setSubscribed] = useState(false);

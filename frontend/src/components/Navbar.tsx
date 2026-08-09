@@ -24,7 +24,9 @@ interface NavSettings {
   navLinks?: NavLink[];
   logoText?: string;
   mobileTagline?: string | null;
+  visibility?: Record<string, boolean>;
 }
+
 
 const navLinks = [
   {
@@ -42,10 +44,12 @@ const navLinks = [
 ];
 
 export default function Navbar({ settings }: { settings?: NavSettings }) {
+  const v = settings?.visibility ?? {};
   const finalNavLinks = settings?.navLinks && settings.navLinks.length > 0 ? settings.navLinks : navLinks;
-  const brandName = settings?.logoText || "BODHIQ";
-  const mobileTagline = settings?.mobileTagline ?? null;
+  const brandName = v.logo_text !== false ? (settings?.logoText || "BODHIQ") : "";
+  const mobileTagline = v.mobile_tagline !== false ? (settings?.mobileTagline ?? null) : null;
   const { isSignedIn, user } = useUser();
+
   const router = useRouter();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);

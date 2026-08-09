@@ -23,15 +23,17 @@ NavLinkSchema.model_rebuild()
 class HeaderContentUpdate(BaseModel):
     logo_text: Optional[str] = None
     nav_links: Optional[List[NavLinkSchema]] = None
-    background_media: Optional[List[BackgroundMediaItem]] = None
     mobile_tagline: Optional[str] = None
+    visibility: Optional[dict[str, bool]] = None
+
 
 
 class HeaderContentResponse(BaseModel):
     logo_text: str
     nav_links: List[dict]
-    background_media: List[dict]
     mobile_tagline: Optional[str] = None
+    visibility: dict[str, bool] = {}
+
 
 
 # ─── Homepage / Hero ──────────────────────────────────────────────────────────
@@ -44,8 +46,9 @@ class HomepageContentUpdate(BaseModel):
     hero_description: Optional[str] = None
     hero_cta: Optional[str] = None
     hero_cta_link: Optional[str] = None
-    section_enabled: Optional[bool] = None
     background_media: Optional[List[BackgroundMediaItem]] = None
+    visibility: Optional[dict[str, bool]] = None
+
 
 
 class HomepageContentResponse(BaseModel):
@@ -56,8 +59,9 @@ class HomepageContentResponse(BaseModel):
     hero_description: Optional[str] = None
     hero_cta: Optional[str] = None
     hero_cta_link: Optional[str] = None
-    section_enabled: bool
     background_media: List[dict]
+    visibility: dict[str, bool] = {}
+
 
 
 # ─── Philosophy ───────────────────────────────────────────────────────────────
@@ -70,8 +74,9 @@ class PhilosophyContentUpdate(BaseModel):
     description2: Optional[str] = None
     description3: Optional[str] = None
     image_url: Optional[str] = None
-    signature_title: Optional[str] = None
     signature_subtitle: Optional[str] = None
+    visibility: Optional[dict[str, bool]] = None
+
 
 
 class PhilosophyContentResponse(BaseModel):
@@ -82,8 +87,9 @@ class PhilosophyContentResponse(BaseModel):
     description2: Optional[str] = None
     description3: Optional[str] = None
     image_url: Optional[str] = None
-    signature_title: Optional[str] = None
     signature_subtitle: Optional[str] = None
+    visibility: dict[str, bool] = {}
+
 
 
 # ─── Promo ────────────────────────────────────────────────────────────────────
@@ -95,8 +101,9 @@ class PromoContentUpdate(BaseModel):
     description: Optional[str] = None
     bg_type: Optional[str] = None
     bg_url: Optional[str] = None
-    button_text: Optional[str] = None
     button_link: Optional[str] = None
+    visibility: Optional[dict[str, bool]] = None
+
 
 
 class PromoContentResponse(BaseModel):
@@ -106,8 +113,9 @@ class PromoContentResponse(BaseModel):
     description: Optional[str] = None
     bg_type: str
     bg_url: Optional[str] = None
-    button_text: Optional[str] = None
     button_link: Optional[str] = None
+    visibility: dict[str, bool] = {}
+
 
 
 # ─── Featured Collection ──────────────────────────────────────────────────────
@@ -117,8 +125,9 @@ class FeaturedCollectionUpdate(BaseModel):
     eyebrow: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
-    cta_text: Optional[str] = None
     cta_link: Optional[str] = None
+    visibility: Optional[dict[str, bool]] = None
+
 
 
 class FeaturedCollectionResponse(BaseModel):
@@ -126,8 +135,9 @@ class FeaturedCollectionResponse(BaseModel):
     eyebrow: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
-    cta_text: Optional[str] = None
     cta_link: Optional[str] = None
+    visibility: dict[str, bool] = {}
+
 
 
 # ─── About Page ───────────────────────────────────────────────────────────────
@@ -154,12 +164,15 @@ class AboutContentUpdate(BaseModel):
     cta_title: Optional[str] = None
     cta_text: Optional[str] = None
     cta_link: Optional[str] = None
-    meta_title: Optional[str] = None
     meta_description: Optional[str] = None
+    visibility: Optional[dict[str, bool]] = None
+
 
 
 class AboutContentResponse(AboutContentUpdate):
     section_enabled: bool = True
+    visibility: dict[str, bool] = {}
+
 
 
 # ─── Craftsmanship Page ───────────────────────────────────────────────────────
@@ -172,6 +185,8 @@ class CraftStep(BaseModel):
     image: Optional[str] = None
     enabled: bool = True
     order: int = 0
+    visibility: dict[str, bool] = {}
+
 
 
 class CraftsmanshipContentUpdate(BaseModel):
@@ -185,8 +200,9 @@ class CraftsmanshipContentUpdate(BaseModel):
     intro_image: Optional[str] = None
     steps: Optional[List[CraftStep]] = None
     closing_quote: Optional[str] = None
-    meta_title: Optional[str] = None
     meta_description: Optional[str] = None
+    visibility: Optional[dict[str, bool]] = None
+
 
 
 class CraftsmanshipContentResponse(BaseModel):
@@ -200,8 +216,9 @@ class CraftsmanshipContentResponse(BaseModel):
     intro_image: Optional[str] = None
     steps: List[dict]
     closing_quote: Optional[str] = None
-    meta_title: Optional[str] = None
     meta_description: Optional[str] = None
+    visibility: dict[str, bool] = {}
+
 
 
 # ─── FAQs ─────────────────────────────────────────────────────────────────────
@@ -211,6 +228,8 @@ class FAQItemCreate(BaseModel):
     answer: str
     order: int = 0
     enabled: bool = True
+    visibility: dict[str, bool] = {}
+
 
 
 class FAQItemUpdate(BaseModel):
@@ -218,6 +237,8 @@ class FAQItemUpdate(BaseModel):
     answer: Optional[str] = None
     order: Optional[int] = None
     enabled: Optional[bool] = None
+    visibility: Optional[dict[str, bool]] = None
+
 
 
 class FAQItemResponse(BaseModel):
@@ -226,6 +247,8 @@ class FAQItemResponse(BaseModel):
     answer: str
     order: int
     enabled: bool
+    visibility: dict[str, bool] = {}
+
 
     class Config:
         from_attributes = True
@@ -244,6 +267,8 @@ class CMSPageContentUpdate(BaseModel):
     meta_title: Optional[str] = None
     meta_description: Optional[str] = None
     section_enabled: Optional[bool] = None
+    visibility: Optional[dict[str, bool]] = None
+
 
 
 class CMSPageContentResponse(BaseModel):
@@ -253,6 +278,8 @@ class CMSPageContentResponse(BaseModel):
     meta_title: Optional[str] = None
     meta_description: Optional[str] = None
     section_enabled: bool
+    visibility: dict[str, bool] = {}
+
 
     class Config:
         from_attributes = True

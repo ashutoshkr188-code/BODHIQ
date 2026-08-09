@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Save, RefreshCw } from "lucide-react";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
 import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { getContentFeaturedCollection, updateContentFeaturedCollection } from "@/features/dashboard/api";
 
@@ -32,7 +33,7 @@ export default function FeaturedCollectionDashboard() {
   const { toast, show: showToast, hide: hideToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<any>({ section_enabled: true, eyebrow: "", title: "", description: "", cta_text: "", cta_link: "" });
+  const [form, setForm] = useState<any>({ section_enabled: true, eyebrow: "", title: "", description: "", cta_text: "", cta_link: "" , visibility: {}});
 
   useEffect(() => {
     (async () => {
@@ -69,12 +70,37 @@ export default function FeaturedCollectionDashboard() {
 
       <div className="bg-[#0d0d0d] border border-white/5 rounded-2xl p-6 space-y-5">
         <Toggle checked={form.section_enabled} onChange={(v) => setForm({ ...form, section_enabled: v })} label="Section Enabled" />
-        <Field label="Eyebrow Label"><Input value={form.eyebrow ?? ""} onChange={(e) => setForm({ ...form, eyebrow: e.target.value })} placeholder="The Collection" /></Field>
-        <Field label="Section Title"><Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Timeless Presence" /></Field>
-        <Field label="Description"><Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
+        <VisibilityField
+  label="Eyebrow Label"
+  visible={form.visibility?.eyebrow ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, eyebrow: v } })}
+>
+<Input value={form.eyebrow ?? ""} onChange={(e) => setForm({ ...form, eyebrow: e.target.value })} placeholder="The Collection" /></VisibilityField>
+        <VisibilityField
+  label="Section Title"
+  visible={form.visibility?.title ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, title: v } })}
+>
+<Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Timeless Presence" /></VisibilityField>
+        <VisibilityField
+  label="Description"
+  visible={form.visibility?.description ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, description: v } })}
+>
+<Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></VisibilityField>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="CTA Text"><Input value={form.cta_text ?? ""} onChange={(e) => setForm({ ...form, cta_text: e.target.value })} placeholder="View All" /></Field>
-          <Field label="CTA Link"><Input value={form.cta_link ?? ""} onChange={(e) => setForm({ ...form, cta_link: e.target.value })} placeholder="/collection" /></Field>
+          <VisibilityField
+  label="CTA Text"
+  visible={form.visibility?.cta_text ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, cta_text: v } })}
+>
+<Input value={form.cta_text ?? ""} onChange={(e) => setForm({ ...form, cta_text: e.target.value })} placeholder="View All" /></VisibilityField>
+          <VisibilityField
+  label="CTA Link"
+  visible={form.visibility?.cta_link ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, cta_link: v } })}
+>
+<Input value={form.cta_link ?? ""} onChange={(e) => setForm({ ...form, cta_link: e.target.value })} placeholder="/collection" /></VisibilityField>
         </div>
       </div>
 

@@ -38,7 +38,9 @@ export default async function Home() {
     ctaText: hp?.hero_cta ?? null,
     ctaLink: hp?.hero_cta_link ?? "/collection",
     backgroundMedia: hp?.background_media ?? [],
+    visibility: hp?.visibility ?? {},
   };
+
 
   // Map CMS → Philosophy props
   const philosophyData: PhilosophyData = {
@@ -52,7 +54,9 @@ export default async function Home() {
     signatureTitle: phil?.signature_title ?? null,
     signatureSubtitle: phil?.signature_subtitle ?? null,
     imageUrl: phil?.image_url ?? null,
+    visibility: phil?.visibility ?? {},
   };
+
 
   // Map CMS → Promo props
   const promoData: PromoData = {
@@ -64,7 +68,9 @@ export default async function Home() {
     bgUrl: promo?.bg_url ?? null,
     buttonText: promo?.button_text ?? null,
     buttonLink: promo?.button_link ?? "/collection",
+    visibility: promo?.visibility ?? {},
   };
+
 
   return (
     <main>

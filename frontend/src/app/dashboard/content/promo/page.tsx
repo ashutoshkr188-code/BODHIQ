@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Save, RefreshCw, Upload } from "lucide-react";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
 import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { getContentPromo, updateContentPromo, uploadMultipleFiles } from "@/features/dashboard/api";
 
@@ -88,12 +89,37 @@ export default function PromoPage() {
 
       <div className="bg-[#0d0d0d] border border-white/5 rounded-2xl p-6 space-y-5">
         <Toggle checked={form.section_enabled} onChange={(v) => setForm({ ...form, section_enabled: v })} label="Section Enabled" />
-        <Field label="Eyebrow Label"><Input value={form.eyebrow_label ?? ""} onChange={(e) => setForm({ ...form, eyebrow_label: e.target.value })} placeholder="Featured Spotlight" /></Field>
-        <Field label="Title"><Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="The Art of Kintsugi" /></Field>
-        <Field label="Description"><Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
+        <VisibilityField
+  label="Eyebrow Label"
+  visible={form.visibility?.eyebrow_label ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, eyebrow_label: v } })}
+>
+<Input value={form.eyebrow_label ?? ""} onChange={(e) => setForm({ ...form, eyebrow_label: e.target.value })} placeholder="Featured Spotlight" /></VisibilityField>
+        <VisibilityField
+  label="Title"
+  visible={form.visibility?.title ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, title: v } })}
+>
+<Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="The Art of Kintsugi" /></VisibilityField>
+        <VisibilityField
+  label="Description"
+  visible={form.visibility?.description ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, description: v } })}
+>
+<Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></VisibilityField>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Button Text"><Input value={form.button_text ?? ""} onChange={(e) => setForm({ ...form, button_text: e.target.value })} placeholder="Explore Craftsmanship" /></Field>
-          <Field label="Button Link"><Input value={form.button_link ?? ""} onChange={(e) => setForm({ ...form, button_link: e.target.value })} placeholder="/collection" /></Field>
+          <VisibilityField
+  label="Button Text"
+  visible={form.visibility?.button_text ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, button_text: v } })}
+>
+<Input value={form.button_text ?? ""} onChange={(e) => setForm({ ...form, button_text: e.target.value })} placeholder="Explore Craftsmanship" /></VisibilityField>
+          <VisibilityField
+  label="Button Link"
+  visible={form.visibility?.button_link ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, button_link: v } })}
+>
+<Input value={form.button_link ?? ""} onChange={(e) => setForm({ ...form, button_link: e.target.value })} placeholder="/collection" /></VisibilityField>
         </div>
 
         <div className="h-px bg-white/5" />

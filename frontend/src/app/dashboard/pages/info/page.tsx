@@ -29,7 +29,7 @@ function PageEditor({ slug, label }: PageEditorProps) {
   const { toast, show: showToast, hide: hideToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ title: "", content: "", meta_title: "", meta_description: "", section_enabled: true });
+  const [form, setForm] = useState<any>({ title: "", content: "", meta_title: "", meta_description: "", section_enabled: true , visibility: {}});
 
   useEffect(() => {
     setLoading(true);
@@ -37,7 +37,7 @@ function PageEditor({ slug, label }: PageEditorProps) {
       const token = await getToken();
       if (!token) return;
       const data = await getCMSPage(token, slug).catch(() => null);
-      if (data) setForm({ title: data.title || "", content: data.content || "", meta_title: data.meta_title || "", meta_description: data.meta_description || "", section_enabled: data.section_enabled ?? true });
+      if (data) setForm({ title: data.title || "", content: data.content || "", meta_title: data.meta_title || "", meta_description: data.meta_description || "", section_enabled: data.section_enabled ?? true, visibility: data.visibility || {} });
       setLoading(false);
     })();
   }, [slug]);

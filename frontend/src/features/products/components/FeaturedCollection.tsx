@@ -21,7 +21,9 @@ interface FeaturedCollectionCMS {
   description: string | null;
   cta_text: string | null;
   cta_link: string | null;
+  visibility?: Record<string, boolean>;
 }
+
 
 export default async function FeaturedCollection() {
   let products: FeaturedProduct[] = [];
@@ -59,11 +61,13 @@ export default async function FeaturedCollection() {
   // Hide if no products and no CMS content
   if (products.length === 0 && !cms?.title) return null;
 
-  const eyebrow = cms?.eyebrow ?? null;
-  const title = cms?.title ?? null;
-  const description = cms?.description ?? null;
-  const ctaText = cms?.cta_text ?? null;
-  const ctaLink = cms?.cta_link ?? "/collection";
+  const v = cms?.visibility ?? {};
+  const eyebrow = v.eyebrow !== false ? (cms?.eyebrow ?? null) : null;
+  const title = v.title !== false ? (cms?.title ?? null) : null;
+  const description = v.description !== false ? (cms?.description ?? null) : null;
+  const ctaText = v.cta_text !== false ? (cms?.cta_text ?? null) : null;
+  const ctaLink = v.cta_link !== false ? (cms?.cta_link ?? "/collection") : "/collection";
+
 
   return (
     <section className="bg-black text-white px-6 py-20">

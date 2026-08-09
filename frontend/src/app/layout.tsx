@@ -106,7 +106,9 @@ export default async function RootLayout({
     logoText: headerData?.logo_text || (settings as any)?.logoText || "BODHIQ",
     navLinks: headerData?.nav_links || null,
     mobileTagline: headerData?.mobile_tagline || null,
+    visibility: headerData?.visibility ?? {},
   };
+
 
   return (
     <ClerkProvider>

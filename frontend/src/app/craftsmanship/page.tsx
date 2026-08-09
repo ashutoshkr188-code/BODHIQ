@@ -27,7 +27,9 @@ interface CraftsmanshipCMS {
   closing_quote: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  visibility?: Record<string, boolean>;
 }
+
 
 export async function generateMetadata(): Promise<Metadata> {
   const cms = await serverFetch<CraftsmanshipCMS>("/content/craftsmanship", { cache: "no-store" }).catch(() => null);
@@ -52,7 +54,25 @@ export default async function CraftsmanshipPage() {
     );
   }
 
+  if (cms) {
+    const v = cms.visibility ?? {};
+    const keys = Object.keys(cms) as (keyof CraftsmanshipCMS)[];
+    for (const key of keys) {
+       if (key !== 'visibility' && key !== 'section_enabled' && key !== 'steps' && v[key] === false) {
+           (cms as any)[key] = null;
+       }
+    }
+    // Handle steps visibility
+    if (cms.steps) {
+        cms.steps = cms.steps.map(step => {
+            const stepVisibilityKey = `step_${step.order}`; // Fallback heuristic if we didn't add unique visibility keys to steps. Actually wait, they are lists, handled differently in CMS, but for safety let's leave it as is since steps use the `enabled` flag.
+            return step;
+        });
+    }
+  }
+
   const enabledSteps = (cms?.steps || [])
+
     .filter((s) => s.enabled !== false)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 

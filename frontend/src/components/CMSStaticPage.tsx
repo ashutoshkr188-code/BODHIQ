@@ -8,7 +8,9 @@ interface CMSPageData {
   meta_title: string | null;
   meta_description: string | null;
   section_enabled: boolean;
+  visibility?: Record<string, boolean>;
 }
+
 
 interface CMSStaticPageProps {
   slug: string;
@@ -45,13 +47,17 @@ export default async function CMSStaticPage({
     );
   }
 
-  const title = data?.title || fallbackTitle;
+  const v = data?.visibility ?? {};
+  const title = v.title !== false ? (data?.title || fallbackTitle) : undefined;
   const subtitle = data?.section_enabled === true ? undefined : fallbackSubtitle;
-  const content = data?.content ?? null;
+  const content = v.content !== false ? (data?.content ?? null) : null;
+
+
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <PageHeader eyebrow={eyebrow} title={title} subtitle={fallbackSubtitle} />
+      <PageHeader eyebrow={eyebrow} title={title ?? undefined} subtitle={subtitle ?? undefined} />
+
 
       <section className="px-6 pb-24">
         <div className="max-w-4xl mx-auto">

@@ -15,7 +15,9 @@ export interface PhilosophyData {
   signatureTitle?: string | null;
   signatureSubtitle?: string | null;
   imageUrl?: string | null;
+  visibility?: Record<string, boolean>;
 }
+
 
 export default function PhilosophySection({ data }: { data?: PhilosophyData }) {
   // If section disabled or all key content is blank, hide completely
@@ -24,7 +26,19 @@ export default function PhilosophySection({ data }: { data?: PhilosophyData }) {
     data.title || data.subtitle || data.description1 || data.description2 || data.description3;
   if (!hasContent) return null;
 
-  const resolvedImageUrl = resolveMediaUrl(data.imageUrl ?? null);
+  // Visibility Checks
+  const v = data.visibility ?? {};
+  const eyebrowLabel = v.eyebrow_label !== false ? data.eyebrowLabel : null;
+  const title = v.title !== false ? data.title : null;
+  const description1 = v.description !== false ? data.description1 : null;
+  const description2 = v.description2 !== false ? data.description2 : null;
+  const description3 = v.description3 !== false ? data.description3 : null;
+  const signatureTitle = v.signature_title !== false ? data.signatureTitle : null;
+  const signatureSubtitle = v.signature_subtitle !== false ? data.signatureSubtitle : null;
+  const imageUrl = v.image_url !== false ? data.imageUrl : null;
+  
+  const resolvedImageUrl = resolveMediaUrl(imageUrl ?? null);
+
 
   return (
     <section className="bg-black text-white px-6 py-28">
@@ -37,49 +51,47 @@ export default function PhilosophySection({ data }: { data?: PhilosophyData }) {
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          {data.eyebrowLabel && (
+          {eyebrowLabel && (
             <p className="text-xs uppercase tracking-[0.35em] text-[#d4a853] mb-4">
-              {data.eyebrowLabel}
+              {eyebrowLabel}
             </p>
           )}
 
-          {(data.title || data.subtitle) && (
+          {title && (
             <h2 className="text-3xl md:text-5xl font-serif leading-tight">
-              {data.title && <span className="block text-white">{data.title}</span>}
-              {data.subtitle && (
-                <span className="block text-gray-400">{data.subtitle}</span>
-              )}
+              <span className="block text-white">{title}</span>
             </h2>
           )}
 
-          {data.description1 && (
+
+          {description1 && (
             <p className="text-gray-400 mt-6 leading-relaxed text-sm md:text-base whitespace-pre-line">
-              {data.description1}
+              {description1}
             </p>
           )}
 
-          {data.description2 && (
+          {description2 && (
             <p className="text-gray-500 mt-4 text-sm md:text-base whitespace-pre-line">
-              {data.description2}
+              {description2}
             </p>
           )}
 
-          {data.description3 && (
+          {description3 && (
             <p className="text-gray-500 mt-4 italic text-sm whitespace-pre-line">
-              {data.description3}
+              {description3}
             </p>
           )}
 
-          {(data.signatureTitle || data.signatureSubtitle) && (
+          {(signatureTitle || signatureSubtitle) && (
             <div className="mt-10 pt-8 border-t border-white/5">
-              {data.signatureTitle && (
+              {signatureTitle && (
                 <p className="text-[10px] uppercase tracking-[0.4em] text-gray-600 mb-2">
-                  {data.signatureTitle}
+                  {signatureTitle}
                 </p>
               )}
-              {data.signatureSubtitle && (
+              {signatureSubtitle && (
                 <p className="text-sm text-[#d4a853]/80 font-serif italic">
-                  {data.signatureSubtitle}
+                  {signatureSubtitle}
                 </p>
               )}
             </div>
@@ -97,7 +109,8 @@ export default function PhilosophySection({ data }: { data?: PhilosophyData }) {
           >
             <Image
               src={resolvedImageUrl}
-              alt={data.signatureTitle || "BODHIQ luxury watch"}
+              alt={signatureTitle || "BODHIQ luxury watch"}
+
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"

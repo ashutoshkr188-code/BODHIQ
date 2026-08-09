@@ -15,6 +15,7 @@ class SiteSettings(Base):
     seo_title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     seo_description: Mapped[str | None] = mapped_column(Text, nullable=True)
     seo_keywords: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 class FooterSettings(Base):
@@ -43,3 +44,4 @@ class FooterSettings(Base):
     # Bottom bar
     copyright_text: Mapped[str | None] = mapped_column(String(200), nullable=True)
     bottom_tagline: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    visibility: Mapped[dict] = mapped_column(JSON, default=dict)

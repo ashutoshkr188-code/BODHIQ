@@ -16,6 +16,8 @@ class SiteSettingsResponse(BaseModel):
     seo_title: str | None = None
     seo_description: str | None = None
     seo_keywords: list | None = None
+    visibility: dict[str, bool] = {}
+
 
     model_config = ConfigDict(
         alias_generator=to_camel,
@@ -30,6 +32,8 @@ class SiteSettingsUpdate(BaseModel):
     seo_title: str | None = None
     seo_description: str | None = None
     seo_keywords: list | None = None
+    visibility: dict[str, bool] | None = None
+
 
     model_config = ConfigDict(
         alias_generator=to_camel,
@@ -57,6 +61,8 @@ class FooterSettingsResponse(BaseModel):
     social_links: list | None = None
     copyright_text: str | None = None
     bottom_tagline: str | None = None
+    visibility: dict[str, bool] = {}
+
 
     model_config = ConfigDict(
         alias_generator=to_camel,
@@ -83,6 +89,8 @@ class FooterSettingsUpdate(BaseModel):
     social_links: list | None = None
     copyright_text: str | None = None
     bottom_tagline: str | None = None
+    visibility: dict[str, bool] | None = None
+
 
     model_config = ConfigDict(
         alias_generator=to_camel,

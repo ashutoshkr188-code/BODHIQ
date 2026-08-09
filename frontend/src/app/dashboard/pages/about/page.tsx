@@ -3,16 +3,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Save, RefreshCw, Upload } from "lucide-react";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
 import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { getContentAbout, updateContentAbout, uploadMultipleFiles } from "@/features/dashboard/api";
 
-const Field = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
-  <div className="space-y-1.5">
-    <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider">{label}</label>
-    {children}
-    {hint && <p className="text-[11px] text-gray-600">{hint}</p>}
-  </div>
-);
+// Removed local Field
+
 const Input = (p: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input {...p} className="w-full bg-[#111] border border-white/8 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#d4a853]/40 transition placeholder:text-gray-700" />
 );
@@ -72,7 +68,8 @@ export default function AboutDashboard() {
   const { toast, show: showToast, hide: hideToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<Record<string, any>>({ section_enabled: true });
+  const [form, setForm] = useState<Record<string, any>>({ section_enabled: true, visibility: {} });
+
 
   useEffect(() => {
     (async () => {
@@ -134,7 +131,12 @@ export default function AboutDashboard() {
           return (
             <div key={f.key}>
               {isFirstOfGroup && <Divider label={groupLabels[groupName] || groupName} />}
-              <Field label={f.label} hint={f.type === "textarea" ? "Supports line breaks" : undefined}>
+              <VisibilityField 
+                label={f.label} 
+                hint={f.type === "textarea" ? "Supports line breaks" : undefined}
+                visible={form.visibility?.[f.key] ?? true}
+                onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, [f.key]: v } })}
+              >
                 {f.type === "image" ? (
                   <div className="space-y-2">
                     {form[f.key] && (
@@ -156,7 +158,7 @@ export default function AboutDashboard() {
                 ) : (
                   <Input value={form[f.key] ?? ""} onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))} />
                 )}
-              </Field>
+              </VisibilityField>
             </div>
           );
         })}

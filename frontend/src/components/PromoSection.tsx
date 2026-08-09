@@ -13,20 +13,24 @@ export interface PromoData {
   bgUrl?: string | null;
   buttonText?: string | null;
   buttonLink?: string | null;
+  visibility?: Record<string, boolean>;
 }
+
 
 export default function PromoSection({ data }: { data?: PromoData }) {
   // Hide if disabled or no meaningful content
   if (!data || data.sectionEnabled === false) return null;
   if (!data.title && !data.bgUrl) return null;
 
-  const eyebrowLabel = data.eyebrowLabel ?? null;
-  const title = data.title ?? null;
-  const description = data.description ?? null;
+  const v = data.visibility ?? {};
+  const eyebrowLabel = v.eyebrow_label !== false ? (data.eyebrowLabel ?? null) : null;
+  const title = v.title !== false ? (data.title ?? null) : null;
+  const description = v.description !== false ? (data.description ?? null) : null;
   const bgType = data.bgType || "image";
-  const bgUrl = data.bgUrl ? resolveMediaUrl(data.bgUrl) : null;
-  const buttonText = data.buttonText ?? null;
-  const buttonLink = data.buttonLink || "/collection";
+  const bgUrl = v.bg_url !== false ? (data.bgUrl ? resolveMediaUrl(data.bgUrl) : null) : null;
+  const buttonText = v.button_text !== false ? (data.buttonText ?? null) : null;
+  const buttonLink = v.button_link !== false ? (data.buttonLink || "/collection") : "/collection";
+
 
   return (
     <section className="relative h-[80vh] w-full flex items-center justify-center bg-black overflow-hidden border-y border-white/[0.03]">

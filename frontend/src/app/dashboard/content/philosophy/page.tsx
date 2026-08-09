@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { Save, RefreshCw, Upload } from "lucide-react";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
 import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { getContentPhilosophy, updateContentPhilosophy, uploadMultipleFiles } from "@/features/dashboard/api";
 
@@ -88,17 +89,54 @@ export default function PhilosophyPage() {
 
       <div className="bg-[#0d0d0d] border border-white/5 rounded-2xl p-6 space-y-5">
         <Toggle checked={form.section_enabled} onChange={(v) => setForm({ ...form, section_enabled: v })} label="Section Enabled" />
-        <Field label="Eyebrow Label"><Input value={form.eyebrow_label ?? ""} onChange={(e) => setForm({ ...form, eyebrow_label: e.target.value })} placeholder="The Philosophy" /></Field>
-        <Field label="Title"><Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="In a world obsessed with perfection…" /></Field>
-        <Field label="Description (Paragraph 1)" hint="Supports line breaks"><Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
-        <Field label="Description (Paragraph 2)"><Textarea value={form.description2 ?? ""} onChange={(e) => setForm({ ...form, description2: e.target.value })} /></Field>
-        <Field label="Description (Paragraph 3)" hint="Optional italic paragraph"><Textarea value={form.description3 ?? ""} onChange={(e) => setForm({ ...form, description3: e.target.value })} rows={3} /></Field>
+        <VisibilityField
+  label="Eyebrow Label"
+  visible={form.visibility?.eyebrow_label ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, eyebrow_label: v } })}
+>
+<Input value={form.eyebrow_label ?? ""} onChange={(e) => setForm({ ...form, eyebrow_label: e.target.value })} placeholder="The Philosophy" /></VisibilityField>
+        <VisibilityField
+  label="Title"
+  visible={form.visibility?.title ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, title: v } })}
+>
+<Input value={form.title ?? ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="In a world obsessed with perfection…" /></VisibilityField>
+        <VisibilityField
+  label="Description (Paragraph 1)"
+  hint="Supports line breaks"
+  visible={form.visibility?.description ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, description: v } })}
+>
+<Textarea value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></VisibilityField>
+        <VisibilityField
+  label="Description (Paragraph 2)"
+  visible={form.visibility?.description2 ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, description2: v } })}
+>
+<Textarea value={form.description2 ?? ""} onChange={(e) => setForm({ ...form, description2: e.target.value })} /></VisibilityField>
+        <VisibilityField
+  label="Description (Paragraph 3)"
+  hint="Optional italic paragraph"
+  visible={form.visibility?.description3 ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, description3: v } })}
+>
+<Textarea value={form.description3 ?? ""} onChange={(e) => setForm({ ...form, description3: e.target.value })} rows={3} /></VisibilityField>
 
         <div className="h-px bg-white/5" />
         <p className="text-xs uppercase tracking-wider text-gray-600">Signature Block</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Signature Title"><Input value={form.signature_title ?? ""} onChange={(e) => setForm({ ...form, signature_title: e.target.value })} placeholder="BODHIQ" /></Field>
-          <Field label="Signature Subtitle"><Input value={form.signature_subtitle ?? ""} onChange={(e) => setForm({ ...form, signature_subtitle: e.target.value })} placeholder="Imperfect. Almost." /></Field>
+          <VisibilityField
+  label="Signature Title"
+  visible={form.visibility?.signature_title ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, signature_title: v } })}
+>
+<Input value={form.signature_title ?? ""} onChange={(e) => setForm({ ...form, signature_title: e.target.value })} placeholder="BODHIQ" /></VisibilityField>
+          <VisibilityField
+  label="Signature Subtitle"
+  visible={form.visibility?.signature_subtitle ?? true}
+  onToggle={(v) => setForm({ ...form, visibility: { ...form.visibility, signature_subtitle: v } })}
+>
+<Input value={form.signature_subtitle ?? ""} onChange={(e) => setForm({ ...form, signature_subtitle: e.target.value })} placeholder="Imperfect. Almost." /></VisibilityField>
         </div>
 
         <div className="h-px bg-white/5" />
