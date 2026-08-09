@@ -68,6 +68,8 @@ class CMSService:
             )
         if payload.mobile_tagline is not None:
             header.mobile_tagline = payload.mobile_tagline or None
+        if payload.visibility is not None:
+            header.visibility = payload.visibility
         return cms_repo.update_header(db, header)
 
     # ── Homepage / Hero ───────────────────────────────────────────────────────
@@ -115,6 +117,8 @@ class CMSService:
                 [item.model_dump() for item in payload.background_media],
                 key=lambda x: x["order"],
             )
+        if payload.visibility is not None:
+            homepage.visibility = payload.visibility
         return cms_repo.update_homepage(db, homepage)
 
     # ── Philosophy ────────────────────────────────────────────────────────────
@@ -157,6 +161,8 @@ class CMSService:
             philosophy.signature_title = payload.signature_title or None
         if payload.signature_subtitle is not None:
             philosophy.signature_subtitle = payload.signature_subtitle or None
+        if payload.visibility is not None:
+            philosophy.visibility = payload.visibility
         return cms_repo.update_philosophy(db, philosophy)
 
     # ── Promo ─────────────────────────────────────────────────────────────────
@@ -196,6 +202,8 @@ class CMSService:
             promo.button_text = payload.button_text or None
         if payload.button_link is not None:
             promo.button_link = payload.button_link or None
+        if payload.visibility is not None:
+            promo.visibility = payload.visibility
         return cms_repo.update_promo(db, promo)
 
     # ── Featured Collection ───────────────────────────────────────────────────
@@ -231,6 +239,8 @@ class CMSService:
             row.cta_text = payload.cta_text or None
         if payload.cta_link is not None:
             row.cta_link = payload.cta_link or None
+        if payload.visibility is not None:
+            row.visibility = payload.visibility
         db.commit()
         db.refresh(row)
         return row
@@ -335,6 +345,7 @@ class CMSService:
                 answer=faq_data.answer,
                 order=faq_data.order if faq_data.order is not None else i,
                 enabled=faq_data.enabled,
+                visibility=faq_data.visibility,
             )
             db.add(item)
             items.append(item)
