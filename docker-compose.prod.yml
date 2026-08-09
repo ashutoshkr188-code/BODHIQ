@@ -35,12 +35,7 @@ services:
     restart: always
     networks:
       - bodhiq_net
-    logging:
-      driver: "awslogs"
-      options:
-        awslogs-group: "/ecs/bodhiq-nginx"
-        awslogs-region: "ap-south-1"
-        awslogs-stream-prefix: "nginx"
+
 
   # ── Certbot for Let's Encrypt SSL ──────────────────────────────────────────
   certbot:
@@ -82,12 +77,7 @@ services:
     restart: always
     networks:
       - bodhiq_net
-    logging:
-      driver: "awslogs"
-      options:
-        awslogs-group: "/ecs/bodhiq-backend"
-        awslogs-region: "ap-south-1"
-        awslogs-stream-prefix: "backend"
+
     # Resource limits for EC2 (adjust based on instance type)
     deploy:
       resources:
@@ -125,12 +115,7 @@ services:
     restart: always
     networks:
       - bodhiq_net
-    logging:
-      driver: "awslogs"
-      options:
-        awslogs-group: "/ecs/bodhiq-frontend"
-        awslogs-region: "ap-south-1"
-        awslogs-stream-prefix: "frontend"
+
     deploy:
       resources:
         limits:
