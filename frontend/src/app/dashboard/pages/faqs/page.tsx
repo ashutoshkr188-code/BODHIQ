@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Save, RefreshCw, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
 import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { getAllFaqs, bulkReplaceFaqs } from "@/features/dashboard/api";
 
@@ -21,7 +22,7 @@ const Toggle = ({ checked, onChange, label }: { checked: boolean; onChange: (v: 
   </label>
 );
 
-interface FAQItem { id?: number; question: string; answer: string; order: number; enabled: boolean; }
+interface FAQItem { id?: number; question: string; answer: string; order: number; enabled: boolean; visibility?: Record<string, boolean>; }
 
 export default function FAQsDashboard() {
   const { getToken } = useAuth();
@@ -40,7 +41,7 @@ export default function FAQsDashboard() {
     })();
   }, []);
 
-  const addItem = () => setItems((prev) => [...prev, { question: "", answer: "", order: prev.length, enabled: true }]);
+  const addItem = () => setItems((prev) => [...prev, { question: "", answer: "", order: prev.length, enabled: true, visibility: {} }]);
   const remove = (idx: number) => setItems((prev) => prev.filter((_, i) => i !== idx).map((s, i) => ({ ...s, order: i })));
   const update = (idx: number, key: string, value: any) => setItems((prev) => prev.map((s, i) => i === idx ? { ...s, [key]: value } : s));
   const move = (idx: number, dir: -1 | 1) => {
@@ -60,7 +61,7 @@ export default function FAQsDashboard() {
     try {
       const token = await getToken();
       if (!token) throw new Error("No token");
-      const result = await bulkReplaceFaqs(token, items.map((i, idx) => ({ question: i.question, answer: i.answer, order: idx, enabled: i.enabled })));
+      const result = await bulkReplaceFaqs(token, items.map((i, idx) => ({ question: i.question, answer: i.answer, order: idx, enabled: i.enabled, visibility: i.visibility || {} })));
       setItems(result.sort((a: FAQItem, b: FAQItem) => a.order - b.order));
       showToast("FAQs saved.", "success");
     } catch (e: any) {
@@ -101,16 +102,20 @@ export default function FAQsDashboard() {
                 <button onClick={() => remove(idx)} className="p-1 text-red-400/60 hover:text-red-400 transition"><Trash2 size={13} /></button>
               </div>
             </div>
-            <Input
-              value={item.question}
-              onChange={(e) => update(idx, "question", e.target.value)}
-              placeholder="FAQ question"
-            />
-            <Textarea
-              value={item.answer}
-              onChange={(e) => update(idx, "answer", e.target.value)}
-              placeholder="FAQ answer (Markdown supported)"
-            />
+            <VisibilityField label="Question" visible={item.visibility?.question ?? true} onToggle={(v) => update(idx, "visibility", { ...(item.visibility || {}), question: v })}>
+              <Input
+                value={item.question}
+                onChange={(e) => update(idx, "question", e.target.value)}
+                placeholder="FAQ question"
+              />
+            </VisibilityField>
+            <VisibilityField label="Answer" visible={item.visibility?.answer ?? true} onToggle={(v) => update(idx, "visibility", { ...(item.visibility || {}), answer: v })}>
+              <Textarea
+                value={item.answer}
+                onChange={(e) => update(idx, "answer", e.target.value)}
+                placeholder="FAQ answer (Markdown supported)"
+              />
+            </VisibilityField>
           </div>
         ))}
       </div>

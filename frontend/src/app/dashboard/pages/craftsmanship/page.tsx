@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Save, RefreshCw, Plus, Trash2, GripVertical, Upload, ChevronUp, ChevronDown } from "lucide-react";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
 import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { getContentCraftsmanship, updateContentCraftsmanship, uploadMultipleFiles } from "@/features/dashboard/api";
 
@@ -93,29 +94,43 @@ export default function CraftsmanshipDashboard() {
       <div className="bg-[#0d0d0d] border border-white/5 rounded-2xl p-6 space-y-4">
         <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Page Header</h3>
         <Toggle checked={form.section_enabled} onChange={(v) => setField("section_enabled", v)} label="Page Enabled" />
-        <Input value={form.page_eyebrow ?? ""} onChange={(e) => setField("page_eyebrow", e.target.value)} placeholder="Eyebrow label" />
-        <Input value={form.page_title ?? ""} onChange={(e) => setField("page_title", e.target.value)} placeholder="Page title" />
-        <Textarea value={form.page_subtitle ?? ""} onChange={(e) => setField("page_subtitle", e.target.value)} placeholder="Page subtitle" />
+        <VisibilityField label="Eyebrow Label" visible={form.visibility?.page_eyebrow ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, page_eyebrow: v } }))}>
+          <Input value={form.page_eyebrow ?? ""} onChange={(e) => setField("page_eyebrow", e.target.value)} placeholder="Eyebrow label" />
+        </VisibilityField>
+        <VisibilityField label="Page Title" visible={form.visibility?.page_title ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, page_title: v } }))}>
+          <Input value={form.page_title ?? ""} onChange={(e) => setField("page_title", e.target.value)} placeholder="Page title" />
+        </VisibilityField>
+        <VisibilityField label="Page Subtitle" visible={form.visibility?.page_subtitle ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, page_subtitle: v } }))}>
+          <Textarea value={form.page_subtitle ?? ""} onChange={(e) => setField("page_subtitle", e.target.value)} placeholder="Page subtitle" />
+        </VisibilityField>
       </div>
 
       {/* Intro Section */}
       <div className="bg-[#0d0d0d] border border-white/5 rounded-2xl p-6 space-y-4">
         <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Intro Section</h3>
-        <Input value={form.intro_eyebrow ?? ""} onChange={(e) => setField("intro_eyebrow", e.target.value)} placeholder="Intro eyebrow" />
-        <Input value={form.intro_title ?? ""} onChange={(e) => setField("intro_title", e.target.value)} placeholder="Intro title" />
-        <Textarea value={form.intro_body ?? ""} onChange={(e) => setField("intro_body", e.target.value)} placeholder="Intro body text" rows={4} />
-        <label className="block cursor-pointer">
-          <div className="border-2 border-dashed border-white/10 rounded-xl p-3 text-center hover:border-[#d4a853]/30 transition">
-            <Upload size={14} className="mx-auto mb-1 text-gray-600" />
-            <p className="text-xs text-gray-500">{form.intro_image ? "Replace intro image" : "Upload intro image"}</p>
-          </div>
-          <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-            const token = await getToken();
-            if (!token || !e.target.files?.[0]) return;
-            const r = await uploadMultipleFiles(token, [e.target.files[0]]).catch(() => null);
-            if (r?.files[0]) setField("intro_image", r.files[0].url);
-          }} />
-        </label>
+        <VisibilityField label="Intro Eyebrow" visible={form.visibility?.intro_eyebrow ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, intro_eyebrow: v } }))}>
+          <Input value={form.intro_eyebrow ?? ""} onChange={(e) => setField("intro_eyebrow", e.target.value)} placeholder="Intro eyebrow" />
+        </VisibilityField>
+        <VisibilityField label="Intro Title" visible={form.visibility?.intro_title ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, intro_title: v } }))}>
+          <Input value={form.intro_title ?? ""} onChange={(e) => setField("intro_title", e.target.value)} placeholder="Intro title" />
+        </VisibilityField>
+        <VisibilityField label="Intro Body" visible={form.visibility?.intro_body ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, intro_body: v } }))}>
+          <Textarea value={form.intro_body ?? ""} onChange={(e) => setField("intro_body", e.target.value)} placeholder="Intro body text" rows={4} />
+        </VisibilityField>
+        <VisibilityField label="Intro Image" visible={form.visibility?.intro_image ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, intro_image: v } }))}>
+          <label className="block cursor-pointer">
+            <div className="border-2 border-dashed border-white/10 rounded-xl p-3 text-center hover:border-[#d4a853]/30 transition">
+              <Upload size={14} className="mx-auto mb-1 text-gray-600" />
+              <p className="text-xs text-gray-500">{form.intro_image ? "Replace intro image" : "Upload intro image"}</p>
+            </div>
+            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+              const token = await getToken();
+              if (!token || !e.target.files?.[0]) return;
+              const r = await uploadMultipleFiles(token, [e.target.files[0]]).catch(() => null);
+              if (r?.files[0]) setField("intro_image", r.files[0].url);
+            }} />
+          </label>
+        </VisibilityField>
       </div>
 
       {/* Craft Steps */}
@@ -164,7 +179,9 @@ export default function CraftsmanshipDashboard() {
       {/* Closing Quote & SEO */}
       <div className="bg-[#0d0d0d] border border-white/5 rounded-2xl p-6 space-y-4">
         <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">Closing Quote</h3>
-        <Textarea value={form.closing_quote ?? ""} onChange={(e) => setField("closing_quote", e.target.value)} placeholder="Closing quote shown at the bottom of the page" />
+        <VisibilityField label="Closing Quote" visible={form.visibility?.closing_quote ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, closing_quote: v } }))}>
+          <Textarea value={form.closing_quote ?? ""} onChange={(e) => setField("closing_quote", e.target.value)} placeholder="Closing quote shown at the bottom of the page" />
+        </VisibilityField>
         <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider pt-2">SEO</h3>
         <Input value={form.meta_title ?? ""} onChange={(e) => setField("meta_title", e.target.value)} placeholder="SEO title" />
         <Textarea value={form.meta_description ?? ""} onChange={(e) => setField("meta_description", e.target.value)} placeholder="SEO description" rows={2} />

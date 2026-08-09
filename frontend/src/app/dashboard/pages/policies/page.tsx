@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Save, RefreshCw, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
 import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { getCMSPage, updateCMSPage } from "@/features/dashboard/api";
 import { useEffect } from "react";
@@ -66,10 +67,13 @@ function PageEditor({ slug, label }: { slug: string; label: string }) {
         </Link>
       </div>
       <Toggle checked={form.section_enabled} onChange={(v) => setForm({ ...form, section_enabled: v })} label="Page enabled" />
-      <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Page title (overrides default)" />
+      <VisibilityField label="Page Title" visible={form.visibility?.title ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, title: v } }))}>
+        <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Page title (overrides default)" />
+      </VisibilityField>
       <div className="space-y-1">
-        <label className="text-xs text-gray-500 uppercase tracking-wider">Policy Content (Markdown)</label>
-        <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={15} placeholder={`# ${label}\n\n**Effective Date:** January 2026\n\n## Section 1\n\nContent...`} />
+        <VisibilityField label="Policy Content (Markdown)" visible={form.visibility?.content ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, content: v } }))}>
+          <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={15} placeholder={`# ${label}\n\n**Effective Date:** January 2026\n\n## Section 1\n\nContent...`} />
+        </VisibilityField>
         <p className="text-[10px] text-gray-700">Write full policy content in Markdown. Rendered and sanitized automatically.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

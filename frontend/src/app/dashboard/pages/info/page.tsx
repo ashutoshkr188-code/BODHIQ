@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Save, RefreshCw, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { VisibilityField } from "@/features/dashboard/components/VisibilityField";
 import { ToastFromHook, useToast } from "@/features/dashboard/components/DashboardToast";
 import { getCMSPage, updateCMSPage } from "@/features/dashboard/api";
 
@@ -67,10 +68,13 @@ function PageEditor({ slug, label }: PageEditorProps) {
         </Link>
       </div>
       <Toggle checked={form.section_enabled} onChange={(v) => setForm({ ...form, section_enabled: v })} label="Page enabled" />
-      <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Page title (overrides default)" />
+      <VisibilityField label="Page Title" visible={form.visibility?.title ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, title: v } }))}>
+        <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Page title (overrides default)" />
+      </VisibilityField>
       <div className="space-y-1">
-        <label className="text-xs text-gray-500 uppercase tracking-wider">Content (Markdown or HTML)</label>
-        <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={12} placeholder={`# ${label}\n\nWrite your page content in Markdown here.\n\n## Section\n\nContent goes here...`} />
+        <VisibilityField label="Content (Markdown or HTML)" visible={form.visibility?.content ?? true} onToggle={(v) => setForm((f: any) => ({ ...f, visibility: { ...f.visibility, content: v } }))}>
+          <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={12} placeholder={`# ${label}\n\nWrite your page content in Markdown here.\n\n## Section\n\nContent goes here...`} />
+        </VisibilityField>
         <p className="text-[10px] text-gray-700">Markdown is converted and sanitized automatically. Supports headings, lists, bold, links.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
