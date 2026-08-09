@@ -74,6 +74,7 @@ class PhilosophyContentUpdate(BaseModel):
     description2: Optional[str] = None
     description3: Optional[str] = None
     image_url: Optional[str] = None
+    signature_title: Optional[str] = None
     signature_subtitle: Optional[str] = None
     visibility: Optional[dict[str, bool]] = None
 
@@ -87,6 +88,7 @@ class PhilosophyContentResponse(BaseModel):
     description2: Optional[str] = None
     description3: Optional[str] = None
     image_url: Optional[str] = None
+    signature_title: Optional[str] = None
     signature_subtitle: Optional[str] = None
     visibility: dict[str, bool] = {}
 
@@ -101,6 +103,7 @@ class PromoContentUpdate(BaseModel):
     description: Optional[str] = None
     bg_type: Optional[str] = None
     bg_url: Optional[str] = None
+    button_text: Optional[str] = None
     button_link: Optional[str] = None
     visibility: Optional[dict[str, bool]] = None
 
@@ -113,6 +116,7 @@ class PromoContentResponse(BaseModel):
     description: Optional[str] = None
     bg_type: str
     bg_url: Optional[str] = None
+    button_text: Optional[str] = None
     button_link: Optional[str] = None
     visibility: dict[str, bool] = {}
 
@@ -125,6 +129,7 @@ class FeaturedCollectionUpdate(BaseModel):
     eyebrow: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
+    cta_text: Optional[str] = None
     cta_link: Optional[str] = None
     visibility: Optional[dict[str, bool]] = None
 
@@ -135,6 +140,7 @@ class FeaturedCollectionResponse(BaseModel):
     eyebrow: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
+    cta_text: Optional[str] = None
     cta_link: Optional[str] = None
     visibility: dict[str, bool] = {}
 
